@@ -1,14 +1,39 @@
 Upgrades
-    Movement speed
-    Hovering 
-    Sidestep
-    Backwards
-    Ghost (pass through other robots)
+  Movement speed
+  Hovering 
+  Sidestep
+  Backwards
+  Ghost (pass through other robots)
 
 Slow when low on fuel?
 
 Movement precedence to fastest?
- - Cleans up code
- - Provides more robust way of determining precedence
- - Makes sense, higher priority robots move fast and should have precedence
- - Less efficient, requires reference array perhaps dictionary<Vector3Int, TileObject> would be more efficient
+  Cleans up code
+  Provides more robust way of determining precedence
+  Makes sense, higher priority robots move fast and should have precedence
+  Less efficient, requires reference array perhaps dictionary<Vector3Int, List<TileObject>> would be more efficient
+
+Things robots can do
+  Manage inventory
+  Dig
+  Craft
+  Build
+
+Things to manage
+  Research/Upgrades
+  Resources
+    Metals
+      Iron
+      
+    Fuels
+      Charcoal
+      Coal
+
+  Battery Power
+    All robots powered at charging stations which are powered by any form of generator
+    Coal generator
+    Solar panels
+
+Custom language
+  Bytecode
+Lua interface?

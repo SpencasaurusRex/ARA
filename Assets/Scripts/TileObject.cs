@@ -6,21 +6,15 @@ namespace ARACore
 {
     public class TileObject : MonoBehaviour
     {
-        public enum Heading
-        {
-            East,
-            North,
-            West,
-            South
-        }
-
         #region Member variables
         public MovementManager movementManager;
         // Stats
-        public int movementTime = 500; // 5 seconds
+        public int movementTime = 50; // In ticks
+        public int turnTime = 50; // In ticks
 
         // Temp states
         private short movementTicks;
+        private short turningTicks;
 
         // Current states
         public Vector3Int position   = Vector3Int.zero;
@@ -43,6 +37,7 @@ namespace ARACore
             }
             else
             {
+                position = new Vector3Int(12, 0, 12);
                 movementManager.RegisterTileObject(this);
             }
         }
@@ -54,11 +49,11 @@ namespace ARACore
                 case MovementAction.Idle:
                     return;
 
-                case MovementAction.Forward:
+                case MovementAction.GoForward:
                     // Check destination
                     break;
 
-                case MovementAction.Left:
+                case MovementAction.TurnLeft:
                     // Check rotation
                     break;
             }
@@ -68,29 +63,40 @@ namespace ARACore
         public void Tick()
         {
             // If we're moving check to see if we're done
-            if (action == MovementAction.Forward)
+            switch (action)
             {
-                movementTicks++;
-                transform.localPosition = Vector3.Lerp(position, targetPosition, (float)movementTicks / movementTime);
-                if (movementTicks == movementTime)
-                {
-                    // We're done moving
-                    // TODO testing bug detectiong
-                    movementManager.Unblock(targetPosition);
-                    //movementManager.Unblock(position);
-                    position = targetPosition;
-                    movementTicks = 0;
-                    action = MovementAction.Idle;
-                }
+                case MovementAction.GoForward:
+                    movementTicks++;
+                    transform.localPosition = Vector3.Lerp(position, targetPosition, (float)movementTicks / movementTime);
+                    if (movementTicks == movementTime)
+                    {
+                        // We're done moving
+                        movementManager.Unblock(position);
+                        position = targetPosition;
+                        movementTicks = 0;
+                        action = MovementAction.Idle;
+                    }
+                    break;
+                case MovementAction.TurnLeft:
+                case MovementAction.TurnRight:
+                    turningTicks++;
+                    transform.localRotation = Quaternion.Lerp(Util.ToQuaternion(heading), Util.ToQuaternion(targetHeading), (float)turningTicks / turnTime);
+                    if (turningTicks == turnTime)
+                    {
+                        // We're done turning
+                        heading = targetHeading;
+                        turningTicks = 0;
+                        action = MovementAction.Idle;
+                    }
+                    break;
             }
-
             // TODO add other actions
 
+            // This is separate to ensure that movement will smoothly continue on the next tick if necessary
             if (action == MovementAction.Idle)
             {
                 // TODO: replace placeholder code
-                //targetAction = (MovementAction)Random.Range(0, 7);
-                targetAction = MovementAction.Forward;
+                targetAction = (MovementAction)Random.Range(2, 5);
                 Debug.Log("Movement action = " + targetAction);
 
                 movementManager.RegisterAction(this);
