@@ -1,0 +1,14 @@
+Upgrades
+    Movement speed
+    Hovering 
+    Sidestep
+    Backwards
+    Ghost (pass through other robots)
+
+Slow when low on fuel?
+
+Movement precedence to fastest?
+ - Cleans up code
+ - Provides more robust way of determining precedence
+ - Makes sense, higher priority robots move fast and should have precedence
+ - Less efficient, requires reference array perhaps dictionary<Vector3Int, TileObject> would be more efficient
