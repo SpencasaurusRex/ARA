@@ -1,0 +1,5 @@
+Resources
+	Voxel storage/rendering
+		https://gamedev.stackexchange.com/questions/17050/which-data-structure-should-be-used-to-represent-voxel-terrain
+		Memory storage should be done with HashDictionary for fast lookup
+		Storage should be done with OctTrees for compact storage

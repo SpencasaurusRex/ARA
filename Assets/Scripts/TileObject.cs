@@ -7,6 +7,9 @@ namespace ARACore
     public class TileObject : MonoBehaviour
     {
         #region Member variables
+        // Unique ID
+        public uint id;
+
         public MovementManager movementManager;
         // Stats
         public int movementTime = 50; // In ticks
@@ -37,7 +40,9 @@ namespace ARACore
             }
             else
             {
+                // TODO instantiation should set this
                 position = new Vector3Int(12, 0, 12);
+                transform.position = position;
                 movementManager.RegisterTileObject(this);
             }
         }
@@ -71,7 +76,7 @@ namespace ARACore
                     if (movementTicks == movementTime)
                     {
                         // We're done moving
-                        movementManager.Unblock(position);
+                        movementManager.Unblock(this.position);
                         position = targetPosition;
                         movementTicks = 0;
                         action = MovementAction.Idle;

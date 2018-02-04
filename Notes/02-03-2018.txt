@@ -1,0 +1,9 @@
+
+- Add ID system
+- Replace blocked array with dictionary
+- Think about event based system
+    NO
+- Fix Gizmos
+
+Future for : 
+    Add arrays of info

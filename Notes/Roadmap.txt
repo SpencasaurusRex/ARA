@@ -1,0 +1,105 @@
+Finish movement system
+	Minor optimizations
+	Up, down, forward, back, left right
+	Conga line problem
+	Tie movement to controls for now, for testing
+	Minor optimizations
+	Camera controls
+
+Chunk system, infinite world
+	Blocks
+		TileEntityProperties
+	Chunks
+	Serialization
+
+Gameplay
+	Lua tie-in
+	Crafting
+	Battery/Charging
+	Building
+	Upgrades/Research
+	FOW 
+		When a robot is dead, show a red spot where it is, but don't give access to the robot unless it's in view
+
+Rendering system
+	Batch rendering
+
+Minor Features
+	In-Game Text-Editor/debugger
+	Alternative text editor open
+	
+Polish
+	Main menu
+	Tutorial
+	Graphics
+	Animation
+	Settings
+	Camera transparencies
+	Music
+	Sound Effects
+	Heavy optimizations
+	Finish movement system
+	Minor optimizations
+	Up, down, forward, back, left right
+	Conga line problem
+	Tie movement to controls for now, for testing
+	Minor optimizations
+	Camera controls
+
+Chunk system, infinite world
+	Blocks
+		TileEntityProperties
+	Chunks
+	Serialization
+
+Gameplay
+	Lua tie-in
+	Crafting
+	Battery/Charging
+	Building
+	Upgrades/Research
+	FOW 
+		When a robot is dead, show a red spot where it is, but don't give access to the robot unless it's in view
+
+Rendering system
+	Batch rendering
+
+Minor Features
+	In-Game Text-Editor/debugger
+	Alternative text editor open
+	
+Polish
+	Main menu
+	Tutorial
+	Graphics
+	Animation
+	Settings
+	Camera transparencies
+	Music
+	Sound Effects
+	Heavy optimizations
+		- Move TileObject info to arrays handled by TileObject manager
+
+Far Future
+	Custom language
+	In-Game editor
+	Modding API
+	Challenge modes?
+		Online leaderboard
+		Server-side solution validation
+			Check for infinite solutions
+			And high solution time
+	PVP
+	Servers/LAN
+
+Far Future
+	Custom language
+	In-Game editor
+	Modding API
+	Challenge modes?
+		Online leaderboard
+		Server-side solution validation
+			Check for infinite solutions
+			And high solution time
+	PVP
+	Servers/LAN

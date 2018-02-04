@@ -8,36 +8,27 @@ namespace ARACore
     {
         HashSet<TileObject> objects = new HashSet<TileObject>();
 
-        HashSet<TileObject> up    = new HashSet<TileObject>();
-        HashSet<TileObject> down  = new HashSet<TileObject>();
-        HashSet<TileObject> east  = new HashSet<TileObject>();
+        HashSet<TileObject> up = new HashSet<TileObject>();
+        HashSet<TileObject> down = new HashSet<TileObject>();
+        HashSet<TileObject> east = new HashSet<TileObject>();
         HashSet<TileObject> north = new HashSet<TileObject>();
-        HashSet<TileObject> west  = new HashSet<TileObject>();
+        HashSet<TileObject> west = new HashSet<TileObject>();
         HashSet<TileObject> south = new HashSet<TileObject>();
-        bool[,,] blocked = new bool[32, 32, 32];
+
+        // Dictionary<Vector3Int, HashSet<int>> registeredMoves;
+        Dictionary<Vector3Int, uint> blocked = new Dictionary<Vector3Int, uint>();
+        const int CHUNK_LENGTH = 32;
+
+        uint currentId;
 
         #region Unity Methods
         void OnDrawGizmos()
         {
             // Display blocked grid
-            for (int i = 0; i < blocked.GetLength(0); i++)
+            Gizmos.color = new Color(1, 1, 0, 0.75F);
+            foreach (var loc in blocked.Keys)
             {
-                for (int j = 0; j < blocked.GetLength(1); j++)
-                {
-                    for (int k = 0; k < blocked.GetLength(2); k++)
-                    {
-                        if (blocked[i, j, k])
-                        {
-                            Gizmos.color = new Color(1, 1, 0, 0.75F);
-                            Gizmos.DrawCube(new Vector3(i, j, k), Vector3.one * .99f);
-                        }
-                        else
-                        {
-                            Gizmos.color = new Color(.2f, 1, .2f, 0.25F);
-                            Gizmos.DrawCube(new Vector3(i, j, k), Vector3.one * .1f);
-                        }
-                    }
-                }
+                Gizmos.DrawCube(loc, Vector3.one * .99f);
             }
         }
 
@@ -55,15 +46,15 @@ namespace ARACore
                 obj.Tick();
             }
 
-            // Collapse all foreach into single with Dictionay<Vector3Int, HashSet<TileObject>> requestedMoves
+            // TODO: Collapse all foreach into single with Dictionay<Vector3Int, HashSet<TileObject>> requestedMoves
             foreach (var obj in up)
             {
                 var targetPosition = obj.position + Util.ToVector3Int(Direction.Up);
                 Debug.Log("Target position: " + targetPosition);
-                if (InBounds(targetPosition) && !blocked[targetPosition.x, targetPosition.y, targetPosition.z])
+                if (InBounds(targetPosition) && !IsBlocked(targetPosition))
                 {
                     // TODO set velocity for interpolation/extrapolation? Remember to set it back too
-                    blocked[targetPosition.x, targetPosition.y, targetPosition.z] = true;
+                    Block(targetPosition, obj.id);
                     obj.targetPosition = targetPosition;
                     obj.action = obj.targetAction;
                 }
@@ -72,9 +63,9 @@ namespace ARACore
             {
                 var targetPosition = obj.position + Util.ToVector3Int(Direction.Down);
                 Debug.Log("Target position: " + targetPosition);
-                if (InBounds(targetPosition) && !blocked[targetPosition.x, targetPosition.y, targetPosition.z])
+                if (InBounds(targetPosition) && !IsBlocked(targetPosition))
                 {
-                    blocked[targetPosition.x, targetPosition.y, targetPosition.z] = true;
+                    Block(targetPosition, obj.id);
                     obj.targetPosition = targetPosition;
                     obj.action = obj.targetAction;
                 }
@@ -83,9 +74,9 @@ namespace ARACore
             {
                 var targetPosition = obj.position + Util.ToVector3Int(Direction.East);
                 Debug.Log("Target position: " + targetPosition);
-                if (InBounds(targetPosition) && !blocked[targetPosition.x, targetPosition.y, targetPosition.z])
+                if (InBounds(targetPosition) && !IsBlocked(targetPosition))
                 {
-                    blocked[targetPosition.x, targetPosition.y, targetPosition.z] = true;
+                    Block(targetPosition, obj.id);
                     obj.targetPosition = targetPosition;
                     obj.action = obj.targetAction;
                 }
@@ -94,9 +85,9 @@ namespace ARACore
             {
                 var targetPosition = obj.position + Util.ToVector3Int(Direction.North);
                 Debug.Log("Target position: " + targetPosition);
-                if (InBounds(targetPosition) && !blocked[targetPosition.x, targetPosition.y, targetPosition.z])
+                if (InBounds(targetPosition) && !IsBlocked(targetPosition))
                 {
-                    blocked[targetPosition.x, targetPosition.y, targetPosition.z] = true;
+                    Block(targetPosition, obj.id);
                     obj.targetPosition = targetPosition;
                     obj.action = obj.targetAction;
                 }
@@ -105,9 +96,9 @@ namespace ARACore
             {
                 var targetPosition = obj.position + Util.ToVector3Int(Direction.West);
                 Debug.Log("Target position: " + targetPosition);
-                if (InBounds(targetPosition) && !blocked[targetPosition.x, targetPosition.y, targetPosition.z])
+                if (InBounds(targetPosition) && !IsBlocked(targetPosition))
                 {
-                    blocked[targetPosition.x, targetPosition.y, targetPosition.z] = true;
+                    Block(targetPosition, obj.id);
                     obj.targetPosition = targetPosition;
                     obj.action = obj.targetAction;
                 }
@@ -116,9 +107,9 @@ namespace ARACore
             {
                 var targetPosition = obj.position + Util.ToVector3Int(Direction.South);
                 Debug.Log("Target position: " + targetPosition);
-                if (InBounds(targetPosition) && !blocked[targetPosition.x, targetPosition.y, targetPosition.z])
+                if (InBounds(targetPosition) && !IsBlocked(targetPosition))
                 {
-                    blocked[targetPosition.x, targetPosition.y, targetPosition.z] = true;
+                    Block(targetPosition, obj.id);
                     obj.targetPosition = targetPosition;
                     obj.action = obj.targetAction;
                 }
@@ -128,7 +119,24 @@ namespace ARACore
 
         private bool InBounds(Vector3Int pos)
         {
-            return pos.x >= 0 && pos.x < blocked.GetLength(0) && pos.y >= 0 && pos.y < blocked.GetLength(1) && pos.z >= 0 && pos.z < blocked.GetLength(2);
+            return pos.x >= 0 && pos.x < CHUNK_LENGTH && pos.y >= 0 && pos.y < CHUNK_LENGTH && pos.z >= 0 && pos.z < CHUNK_LENGTH;
+        }
+
+        private bool IsBlocked(Vector3Int location)
+        {
+            return blocked.ContainsKey(location);
+        }
+
+        private void Block(Vector3Int location, uint id)
+        {
+            // CHECK
+            blocked.Add(location, id);
+        }
+
+        public void Unblock(Vector3Int location)
+        {
+            // CHECK
+            blocked.Remove(location);
         }
 
         #region API Methods
@@ -195,21 +203,14 @@ namespace ARACore
 
         public void RegisterTileObject(TileObject obj)
         {
-            if (blocked[obj.position.x, obj.position.y, obj.position.z])
+            if (IsBlocked(obj.position))
             {
                 Debug.LogError("Create TileObject at blocked location: " + obj.position.ToString() + " " + obj.ToString());
             }
+            obj.id = currentId++;
             objects.Add(obj);
-            blocked[obj.position.x, obj.position.y, obj.position.z] = true;
-        }
+            Block(obj.position, obj.id);
 
-        public void Unblock(Vector3Int pos)
-        {
-            if (!blocked[pos.x, pos.y, pos.z])
-            {
-                Debug.LogError("Attempting to unblock a tile that was already unblocked: " + pos.ToString());
-            }
-            blocked[pos.x, pos.y, pos.z] = false;
         }
         #endregion
     }
