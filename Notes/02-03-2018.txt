@@ -1,9 +1,17 @@
 
-- Add ID system
-- Replace blocked array with dictionary
+Add ID system
+Replace blocked array with dictionary
+Grass cube
+    Make the grass cube
+    Make butt-ton
+Replace 6 HashSets with single dictionary
+- Move MovementManager to static class with 
+passthrough from Unity GameManager object
+- Add all action
+- Figure out why UVs are flipped
+- Figure out missing bottom face
+- Figure out Texture blending
+- Optimization
+
 - Think about event based system
     NO
-- Fix Gizmos
-
-Future for : 
-    Add arrays of info

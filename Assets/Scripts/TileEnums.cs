@@ -10,23 +10,22 @@ namespace ARACore
     {
         GoUp,
         GoDown,
+        GoBack,
+        GoForward,
         TurnLeft,
         TurnRight,
-        GoForward,
-        GoBack,
         Idle,
-        Up,
     }
 
-    public enum Direction
-    {
-        Up,
-        Down,
-        East,
-        North,
-        West,
-        South
-    }
+    //public enum Direction
+    //{
+    //    Up,
+    //    Down,
+    //    East,
+    //    North,
+    //    West,
+    //    South
+    //}
 
     public enum Heading
     {

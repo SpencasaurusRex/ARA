@@ -8,9 +8,8 @@ namespace ARACore
     {
         #region Member variables
         // Unique ID
-        public uint id;
+        public int id;
 
-        public MovementManager movementManager;
         // Stats
         public int movementTime = 50; // In ticks
         public int turnTime = 50; // In ticks
@@ -33,18 +32,13 @@ namespace ARACore
         #region Unity Methods
         void Start()
         {
-            // MUST have movementManager attached by this point
-            if (movementManager == null)
-            {
-                Debug.LogError("Movement Manager not attached");
-            }
-            else
-            {
-                // TODO instantiation should set this
-                position = new Vector3Int(12, 0, 12);
-                transform.position = position;
-                movementManager.RegisterTileObject(this);
-            }
+            // TODO instantiation should set this
+            var x = Random.Range(0, MovementManager.CHUNK_LENGTH);
+            var y = 0;
+            var z = Random.Range(0, MovementManager.CHUNK_LENGTH);
+            position = new Vector3Int(x, y, z);
+            transform.position = position;
+            MovementManager.RegisterTileObject(this);
         }
 
         void Update()
@@ -68,6 +62,7 @@ namespace ARACore
         public void Tick()
         {
             // If we're moving check to see if we're done
+            Debug.Log("Tick on " + action);
             switch (action)
             {
                 case MovementAction.GoForward:
@@ -76,7 +71,7 @@ namespace ARACore
                     if (movementTicks == movementTime)
                     {
                         // We're done moving
-                        movementManager.Unblock(this.position);
+                        MovementManager.Unblock(this.position);
                         position = targetPosition;
                         movementTicks = 0;
                         action = MovementAction.Idle;
@@ -101,10 +96,9 @@ namespace ARACore
             if (action == MovementAction.Idle)
             {
                 // TODO: replace placeholder code
-                targetAction = (MovementAction)Random.Range(2, 5);
-                Debug.Log("Movement action = " + targetAction);
+                targetAction = (MovementAction)Random.Range(3, 6);
 
-                movementManager.RegisterAction(this);
+                MovementManager.RegisterAction(this);
             }
         }
     }
