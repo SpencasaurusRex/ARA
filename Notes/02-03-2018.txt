@@ -5,8 +5,8 @@ Grass cube
     Make the grass cube
     Make butt-ton
 Replace 6 HashSets with single dictionary
-- Move MovementManager to static class with 
-passthrough from Unity GameManager object
+Move MovementManager to static class with 
+passthrough from Unity Manager object
 - Add all action
 - Figure out why UVs are flipped
 - Figure out missing bottom face

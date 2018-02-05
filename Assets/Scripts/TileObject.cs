@@ -38,6 +38,7 @@ namespace ARACore
             var z = Random.Range(0, MovementManager.CHUNK_LENGTH);
             position = new Vector3Int(x, y, z);
             transform.position = position;
+            transform.rotation = Util.ToQuaternion(heading);
             MovementManager.RegisterTileObject(this);
         }
 
@@ -97,6 +98,7 @@ namespace ARACore
             {
                 // TODO: replace placeholder code
                 targetAction = (MovementAction)Random.Range(3, 6);
+                //targetAction = MovementAction.GoForward;
 
                 MovementManager.RegisterAction(this);
             }
