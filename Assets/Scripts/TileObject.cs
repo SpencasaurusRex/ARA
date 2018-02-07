@@ -21,11 +21,13 @@ namespace ARACore
         // Current states
         public Vector3Int position   = Vector3Int.zero;
         public Heading heading       = Heading.East;
+        // What it is actually doing during the current tick
         public MovementAction action = MovementAction.Idle;
 
         // Target states
         public Vector3Int targetPosition  = Vector3Int.zero;
         public Heading targetHeading      = Heading.East;
+        // If something wants to move, targetAction is set to that action
         public MovementAction targetAction = MovementAction.Idle;
         #endregion
 
@@ -34,8 +36,10 @@ namespace ARACore
         {
             // TODO instantiation should set this
             var x = Random.Range(0, MovementManager.CHUNK_LENGTH);
-            var y = 0;
+            var y = Random.Range(0, MovementManager.CHUNK_HEIGHT);
             var z = Random.Range(0, MovementManager.CHUNK_LENGTH);
+            movementTime = Random.Range(20, 100);
+            turnTime = Random.Range(20, 100);
             position = new Vector3Int(x, y, z);
             transform.position = position;
             transform.rotation = Util.ToQuaternion(heading);
@@ -63,12 +67,12 @@ namespace ARACore
         public void Tick()
         {
             // If we're moving check to see if we're done
-            Debug.Log("Tick on " + action);
+            // Debug.Log("Tick on " + action);
             switch (action)
             {
                 case MovementAction.GoForward:
                     movementTicks++;
-                    transform.localPosition = Vector3.Lerp(position, targetPosition, (float)movementTicks / movementTime);
+                    transform.localPosition = Vector3.Lerp(position, targetPosition, (float)movementTicks / movementTime); // GC Alloc
                     if (movementTicks == movementTime)
                     {
                         // We're done moving
@@ -81,7 +85,7 @@ namespace ARACore
                 case MovementAction.TurnLeft:
                 case MovementAction.TurnRight:
                     turningTicks++;
-                    transform.localRotation = Quaternion.Lerp(Util.ToQuaternion(heading), Util.ToQuaternion(targetHeading), (float)turningTicks / turnTime);
+                    transform.localRotation = Quaternion.Lerp(Util.ToQuaternion(heading), Util.ToQuaternion(targetHeading), (float)turningTicks / turnTime); // GC Alloc
                     if (turningTicks == turnTime)
                     {
                         // We're done turning

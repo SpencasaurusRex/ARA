@@ -9,8 +9,8 @@ namespace ARACore
         static List<TileObject> objects = new List<TileObject>();
         static Dictionary<Vector3Int, List<int>> registeredMoves = new Dictionary<Vector3Int, List<int>>();
         public static Dictionary<Vector3Int, int> blocked = new Dictionary<Vector3Int, int>();
-        public const int CHUNK_LENGTH = 32;
-        public const int CHUNK_HEIGHT = 10;
+        public const int CHUNK_LENGTH = 64;
+        public const int CHUNK_HEIGHT = 20;
 
         static int currentId;
 
@@ -24,7 +24,8 @@ namespace ARACore
             {
                 obj.Tick();
             }
-            foreach (var loc in registeredMoves.Keys)
+            var keys = registeredMoves.Keys;
+            foreach (var loc in keys)
             {
                 //Debug.Log("Target position: " + loc);
                 int minPriority = int.MaxValue;
@@ -48,7 +49,7 @@ namespace ARACore
 
                 foreach (var objectId in movers)
                 {
-                    Debug.Log("Almost Collision!");
+                    // Debug.Log("Almost Collision!");
                     var action = objects[objectId].targetAction;
                     // TODO: More complex priority logic
                     if ((int)action < minPriority)
@@ -134,6 +135,7 @@ namespace ARACore
             if (IsBlocked(obj.position))
             {
                 Debug.LogError("Create TileObject at blocked location: " + obj.position.ToString() + " " + obj.ToString());
+                return;
             }
             obj.id = currentId++;
             objects.Add(obj);
