@@ -4,35 +4,56 @@ using UnityEngine;
 
 namespace ARACore
 {
-
     public class Manager : MonoBehaviour {
-        private void OnDrawGizmosSelected()
+        public TileObject TileEntity;
+
+        private void Start()
         {
-            for (int i = 0; i < MovementManager.CHUNK_LENGTH; i++)
+            #region Test setups
+            // Opposing sides
+            //for (int i = 0; i < MovementManager.CHUNK_LENGTH; i++)
+            //{
+            //    var obj = Instantiate(TileEntity);
+            //    MovementManager.RegisterTileEntity(obj, new Vector3Int(i, 0, 0), i * 2 + 10, 10, 1);
+            //}
+            //for (int i = 0; i < MovementManager.CHUNK_LENGTH; i++)
+            //{
+            //    var obj = Instantiate(TileEntity);
+            //    MovementManager.RegisterTileEntity(obj, new Vector3Int(i, 0, MovementManager.CHUNK_LENGTH - 2), i * 3 + 5, 50, 3);
+            //}
+
+            // Matrix fill
+            for (int x = 0; x < MovementManager.CHUNK_LENGTH; x++)
             {
-                for (int j = 0; j < MovementManager.CHUNK_HEIGHT; j++)
+                for (int y = 0; y < MovementManager.CHUNK_HEIGHT; y++)
                 {
-                    for (int k = 0; k < MovementManager.CHUNK_LENGTH; k++)
+                    for (int z = 0; z < MovementManager.CHUNK_LENGTH; z++)
                     {
-                        var loc = new Vector3Int(i, j, k);
-                        if (MovementManager.blocked.ContainsKey(loc))
+                        if (x % 4 == 0 && y % 4 == 0 && z % 4 == 0)
                         {
-                            Gizmos.color = new Color(1, 1, 0, 0.75F);
-                            Gizmos.DrawCube(loc, Vector3.one * .99f);
-                        }
-                        else
-                        {
-                            Gizmos.color = new Color(.2f, .8f, .2f, 0.5f);
-                            Gizmos.DrawCube(loc, Vector3.one * 0.1f);
+                            var obj = Instantiate(TileEntity);
+                            MovementManager.RegisterTileEntity(obj, new Vector3Int(x, y, z), Random.Range(10, 100), Random.Range(10, 100), Random.Range(0, 4));
                         }
                     }
                 }
+            }
+            #endregion
+            Debug.Break();
+        }
+
+        void OnDrawGizmosSelected()
+        {
+            foreach (var key in MovementManager.blocked.Keys)
+            {
+                Gizmos.color = new Color(1, 1, 0, 0.75F);
+                Gizmos.DrawCube(key, Vector3.one * .99f);
             }
         }
 
         void FixedUpdate()
         {
             MovementManager.Tick();
+            MovementManager.ControlEntities();
         }
     }
 }

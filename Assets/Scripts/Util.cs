@@ -51,14 +51,13 @@ namespace ARACore
         //    throw new Exception("Unhandled direction: " + d.ToString());
         //}
 
-        public static Quaternion ToQuaternion(Heading h)
+        public static Quaternion ToQuaternion(int h)
         {
-            return Quaternion.AngleAxis(-90 * (int)h, Vector3.up);
+            return Quaternion.AngleAxis(-90 * h, Vector3.up);
         }
 
         public static int EuclideanMod(int a, int b)
         {
-            Console.WriteLine("{0} % {1} = {2}", a, b, ((a % b) + b) % b);
             return ((a % b) + b) % b;
         }
     }

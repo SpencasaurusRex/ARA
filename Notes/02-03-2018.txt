@@ -7,11 +7,6 @@ Grass cube
 Replace 6 HashSets with single dictionary
 Move MovementManager to static class with 
 passthrough from Unity Manager object
-- Add all action
 - Figure out why UVs are flipped
 - Figure out missing bottom face
 - Figure out Texture blending
-- Optimization
-
-- Think about event based system
-    NO
