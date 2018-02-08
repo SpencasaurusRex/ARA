@@ -3,7 +3,6 @@ Finish movement system
 	Up, down, forward, back, left right
 	Conga line problem
 	Tie movement to controls for now, for testing
-	Minor optimizations
 	Camera controls
 
 Chunk system, infinite world

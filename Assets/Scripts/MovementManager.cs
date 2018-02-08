@@ -1,54 +1,46 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ARACore
 {
+    public class Vector3IntEqualityComparer : IEqualityComparer<Vector3Int>
+    {
+        public bool Equals(Vector3Int a, Vector3Int b)
+        {
+            return a.x == b.x && a.y == b.y && a.z == b.z;
+        }
+
+        public int GetHashCode(Vector3Int obj)
+        {
+            return obj.GetHashCode();
+        }
+    }
+
     public static class MovementManager
     {
         public enum TileEntityAction
         {
-            Forward,
+            Idle = -1,
+            Forward = 0,
             Up,
             Back,
             Down,
             TurnLeft,
             TurnRight,
-            Idle,
-        }
-
-        struct RegisteredMoveEntry
-        {
-            public Vector3Int location;
-            public int id;
-
-            public override bool Equals(object obj)
-            {
-                if (obj == null || !(obj is RegisteredMoveEntry))
-                {
-                    return false;
-                }
-                var other = (RegisteredMoveEntry)obj;
-                return this.location == other.location;
-            }
-
-            public override int GetHashCode()
-            {
-                return location.GetHashCode();
-            }
         }
 
         #region Fields
-        const uint MAX_ENTITIES = 2048;
+        const uint MAX_ENTITIES = 2048 * 4;
         public const int CHUNK_LENGTH = 64;
         public const int CHUNK_HEIGHT = 32;
 
         static uint currentTileEntityId;
         // Who is currently registered to move into a spot
-        // TODO: We could actually replace this with a HashSet of a custom struct that stores x,y,z,id. The hash/equality only checks location so we can do easy lookup of locations AND easy iteration
-        //static HashSet<RegisteredMoveEntry> registeredMovesSet = new HashSet<RegisteredMoveEntry>();
-        static Dictionary<Vector3Int, uint> registeredMoves = new Dictionary<Vector3Int, uint>();
+
+        static Dictionary<Vector3Int, uint> registeredMoves = new Dictionary<Vector3Int, uint>(new Vector3IntEqualityComparer());
         // Tiles that are blocked
-        public static Dictionary<Vector3Int, uint> blocked = new Dictionary<Vector3Int, uint>();
+        public static Dictionary<Vector3Int, uint> blocked = new Dictionary<Vector3Int, uint>(new Vector3IntEqualityComparer());
 
         // TileEntity fields
         static TileObject[] tileObject = new TileObject[MAX_ENTITIES];
@@ -87,10 +79,37 @@ namespace ARACore
             // Control Logic
             for (uint i = 0; i < currentTileEntityId; i++)
             {
-                if (currentAction[i] == TileEntityAction.Idle)
+                if (i == 0)
+                {
+                    if (Input.GetKey(KeyCode.D))
+                    {
+                        RegisterAction(i, TileEntityAction.TurnRight);
+                    }
+                    else if (Input.GetKey(KeyCode.A))
+                    {
+                        RegisterAction(i, TileEntityAction.TurnLeft);
+                    }
+                    if (Input.GetKey(KeyCode.W))
+                    {
+                        RegisterAction(i, TileEntityAction.Forward);
+                    }
+                    else if (Input.GetKey(KeyCode.S))
+                    {
+                        RegisterAction(i, TileEntityAction.Back);
+                    }
+                    else if (Input.GetKey(KeyCode.Q))
+                    {
+                        RegisterAction(i, TileEntityAction.Up);
+                    }
+                    else if (Input.GetKey(KeyCode.E))
+                    {
+                        RegisterAction(i, TileEntityAction.Down);
+                    }
+                }
+                else if (currentAction[i] == TileEntityAction.Idle)
                 {
                     //TileEntityAction action = TileEntityAction.Forward;
-                    TileEntityAction action = (TileEntityAction)Random.Range(0, 7);
+                    TileEntityAction action = (TileEntityAction)UnityEngine.Random.Range(-1, 6);
                     RegisterAction(i, action);
                 }
             }
@@ -135,7 +154,7 @@ namespace ARACore
                 if (action == TileEntityAction.TurnLeft || action == TileEntityAction.TurnRight)
                 {
                     int currentTicks = ++currentTurningTicks[i];
-                    int totalTicks = movementTime[i];
+                    int totalTicks = turningTime[i];
                     Quaternion currentRot = Util.ToQuaternion(currentHeading[i]);
                     Quaternion targetRot = Util.ToQuaternion(targetHeading[i]);
                     tileObject[i].transform.rotation = Quaternion.Lerp(currentRot, targetRot, (float)currentTicks / totalTicks);
@@ -154,7 +173,7 @@ namespace ARACore
         {
             if (IsBlocked(startingLocation) || currentTileEntityId >= MAX_ENTITIES)
             {
-                GameObject.Destroy(o);
+                GameObject.Destroy(o.gameObject);
                 return false;
             }
 
@@ -162,6 +181,7 @@ namespace ARACore
             o.transform.rotation = Util.ToQuaternion(heading);
 
             uint id = currentTileEntityId++;
+            o.id = id;
 
             tileObject[id] = o;
             currentPosition[id] = startingLocation;
@@ -177,6 +197,13 @@ namespace ARACore
 
         public static void RegisterAction(uint id, TileEntityAction action)
         {
+#if DEBUG
+            if ((int)action < -1 || (int)action >= 6) throw new Exception("Incorrect action");
+#endif
+            if (currentAction[id] != TileEntityAction.Idle || action == TileEntityAction.Idle)
+            {
+                return;
+            }
             if (action == TileEntityAction.TurnLeft)
             {
                 targetHeading[id] = (targetHeading[id] + 1) % 4;

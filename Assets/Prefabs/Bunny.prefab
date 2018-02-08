@@ -41,7 +41,7 @@ GameObject:
   - component: {fileID: 23009803113857958}
   - component: {fileID: 114393652600926484}
   m_Layer: 0
-  m_Name: TileEntity
+  m_Name: Bunny
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
