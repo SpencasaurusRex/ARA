@@ -29,7 +29,7 @@ namespace ARACore
                     y = Random.Range(0, MovementManager.CHUNK_HEIGHT);
                     z = Random.Range(0, MovementManager.CHUNK_LENGTH_Z);
                 }
-                while (!MovementManager.RegisterTileEntity(obj, new Vector3Int(x, y, z), 10, 1));
+                while (!MovementManager.RegisterTileEntity(obj, new Vector3Int(x, y, z), Random.Range(10,25), Random.Range(5,20)));
             }
 
             // Read pixel image

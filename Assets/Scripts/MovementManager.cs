@@ -71,6 +71,7 @@ namespace ARACore
 
         // Non-system fields
         public static Vector3Int[] pixelTarget = new Vector3Int[MAX_ENTITIES];
+        public static Vector3Int[] startingPosition = new Vector3Int[MAX_ENTITIES];
         #endregion
 
         #region Private Methods
@@ -96,20 +97,24 @@ namespace ARACore
 
         private static TileEntityAction Head(int currentHeading, int targetHeading)
         {
-            // TODO
-            //int dh = targetHeading - currentHeading;
-            return TileEntityAction.TurnRight;
+            if (Util.EuclideanMod(currentHeading - 1, 4) == targetHeading)
+            {
+                return TileEntityAction.TurnRight;
+            }
+            else 
+            {
+                return TileEntityAction.TurnLeft;
+            }
         }
 
-        #region Interface Methods
-        public static void ControlEntities()
+        private static void MoveTowardsTargets()
         {
-
-            // Control Logic
             for (uint i = 0; i < currentTileEntityId; i++)
             {
-                if ( currentAction[i] == TileEntityAction.Idle)
+                if (currentAction[i] == TileEntityAction.Idle)
                 {
+                    Vector3Int target = targetState == 0 ? pixelTarget[i] : startingPosition[i];
+
                     // If the last action was unsuccessful, do a random move
                     if (actionResult[i] == TileEntityActionResult.Blocked && UnityEngine.Random.value < .1f)
                     {
@@ -118,10 +123,10 @@ namespace ARACore
                         continue;
                     }
 
-
-                    Vector3Int dm = pixelTarget[i] - currentPosition[i];
+                    Vector3Int dm = target - currentPosition[i];
                     int totalDistance = Mathf.Abs(dm.x) + Mathf.Abs(dm.y) + Mathf.Abs(dm.z);
-                    if (totalDistance == 0) { 
+                    if (totalDistance == 0)
+                    {
                         continue;
                     }
                     float chanceX = (float)Mathf.Abs(dm.x) / totalDistance;
@@ -203,6 +208,31 @@ namespace ARACore
             }
         }
 
+        private static int targetState = 0;
+
+        #region Interface Methods
+        public static void ControlEntities()
+        {
+            // Control Logic
+            bool allOnTarget = true;
+            for (uint i = 0; i < currentTileEntityId; i++)
+            {
+                Vector3Int target = targetState == 0 ? pixelTarget[i] : startingPosition[i];
+                if (currentPosition[i] != target)
+                {
+                    allOnTarget = false;
+                    break;
+                }
+            }
+            if (allOnTarget)
+            {
+                targetState = (targetState + 1) % 2;
+                return;
+            }
+
+            MoveTowardsTargets();
+        }
+
         public static void Tick()
         {
             var keys = registeredMoves.Keys;
@@ -273,6 +303,7 @@ namespace ARACore
 
             tileObject[id] = o;
             currentPosition[id] = startingLocation;
+            startingPosition[id] = startingLocation;
 
             movementTime[id] = moveTime;
             turningTime[id] = turnTime;
