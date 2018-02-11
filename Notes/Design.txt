@@ -1,0 +1,110 @@
+Mining
+    Better -> Fast mining times, better yield
+    Crude
+        Hand drill
+    Basic
+        Vertical Mining Drill
+    Advanced
+        Laser
+
+Smelting/Smithing
+    Crude
+        Basic furnace "Just goes"
+    Basic
+        Large furnace - Heats up, consumes fuel continuously
+    Advanced
+        Laser furance 
+
+Crafting
+    Implement Stages?
+
+    Silicon + Iron -> Electronic ciruit
+    Copper ingot   -> Cable
+    Cable          -> Coil
+    Iron ingot     -> Iron rod
+    Iron ingot     -> Casing
+    Assembler Robot
+        Coil + Rod -> Servo
+        Servos + Casing + Electronic circuit -> Basic Robot
+    Conveyor belt controls
+        Robot controls movement
+
+Resources
+    Raw
+        Iron Ore
+        Copper Ore
+        Silicon Ore
+        Gold Ore
+        Coal
+        Sand
+    Refined
+        Iron
+        Copper
+        Silicon
+        Glass
+
+
+Research
+    Communication array
+
+Power Generation
+    Renewable
+        Solar
+        Hydro?
+        Biofuel
+        Wind
+        
+    Non-Renewable
+        Coal
+        Natural Gas?
+        Oil
+        Geothermal
+        Nuclear
+
+    Electrolysis
+        Hydrogen
+
+    Wireless Sending/Receiving
+
+Energy Storage
+    Battery Banks
+    PSH
+
+Inventory Management
+    Individual Items
+
+Inventory Storage
+
+Robot Manufacturing
+
+
+Capabilities
+    Default
+        Forward, Back, Up, Down, TurnLeft, TurnRight
+        Inventory Management
+    Upgrades
+        Strafing
+        Movement/Turning Speed
+        Hovering - Amount / Fuel
+        Mining
+        Advanced Inventory Management
+        Inventory Size
+
+Starting
+    One robot
+        Hover
+        Mine
+        Inventory Management
+    Pallets
+        Iron ore
+        Coal
+        Wire
+        Silicon ore
+    Structures
+        Generator
+        Furnace
+        Crafting station
+
+Interconnection API
+
+start_forward()

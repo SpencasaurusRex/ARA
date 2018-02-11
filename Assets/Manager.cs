@@ -18,44 +18,44 @@ namespace ARACore
             //cf.Init(obj.transform);
 
             // Random fill
-            for (int i = 0; i < MovementManager.MAX_ENTITIES; i++)
-            {
-                TileObject obj;
-                int x, y, z;
-                do
-                {
-                    obj = Instantiate(TileEntity);
-                    x = Random.Range(0, MovementManager.CHUNK_LENGTH_X);
-                    y = Random.Range(0, MovementManager.CHUNK_HEIGHT);
-                    z = Random.Range(0, MovementManager.CHUNK_LENGTH_Z);
-                }
-                while (!MovementManager.RegisterTileEntity(obj, new Vector3Int(x, y, z), Random.Range(10,25), Random.Range(5,20)));
-            }
+            //for (int i = 0; i < MovementManager.MAX_ENTITIES; i++)
+            //{
+            //    TileObject obj;
+            //    int x, y, z;
+            //    do
+            //    {
+            //        obj = Instantiate(TileEntity);
+            //        x = Random.Range(0, MovementManager.CHUNK_LENGTH_X);
+            //        y = Random.Range(0, MovementManager.CHUNK_HEIGHT);
+            //        z = Random.Range(0, MovementManager.CHUNK_LENGTH_Z);
+            //    }
+            //    while (!MovementManager.RegisterTileEntity(obj, new Vector3Int(x, y, z), 100, 50));
+            //}
 
             // Read pixel image
-            Color[] pixels = sourceTexture.GetPixels();
-            int idIndex = 0;
-            for (int i = 0; i < pixels.Length; i++)
-            {
-                if (pixels[i].r == 0)
-                {
-                    int x = i % sourceTexture.width;
-                    int y = MovementManager.CHUNK_HEIGHT / 2;
-                    int z = i / sourceTexture.width;
-                    MovementManager.pixelTarget[idIndex++] = new Vector3Int(x, y, z);
-                }
-            }
+            //Color[] pixels = sourceTexture.GetPixels();
+            //int idIndex = 0;
+            //for (int i = 0; i < pixels.Length; i++)
+            //{
+            //    if (pixels[i].r == 0)
+            //    {
+            //        int x = i % sourceTexture.width;
+            //        int y = MovementManager.CHUNK_HEIGHT / 2;
+            //        int z = i / sourceTexture.width;
+            //        MovementManager.pixelTarget[idIndex++] = new Vector3Int(x, y, z);
+            //    }
+            //}
 
             // Opposing sides
+            for (int i = 0; i < MovementManager.CHUNK_LENGTH_X / 2; i++)
+            {
+                var obj = Instantiate(TileEntity);
+                MovementManager.RegisterTileEntity(obj, new Vector3Int(i, 0, 0), 10, 10, 0);
+            }
             //for (int i = 0; i < MovementManager.CHUNK_LENGTH_X; i++)
             //{
             //    var obj = Instantiate(TileEntity);
-            //    MovementManager.RegisterTileEntity(obj, new Vector3Int(i, 0, 0), i * 2 + 10, 10, 1);
-            //}
-            //for (int i = 0; i < MovementManager.CHUNK_LENGTH_X; i++)
-            //{
-            //    var obj = Instantiate(TileEntity);
-            //    MovementManager.RegisterTileEntity(obj, new Vector3Int(i, 0, MovementManager.CHUNK_LENGTH_Z- 2), i * 3 + 5, 50, 3);
+            //    MovementManager.RegisterTileEntity(obj, new Vector3Int(i, 0, MovementManager.CHUNK_LENGTH_Z - 2), i * 3 + 5, 50, 3);
             //}
 
             // Matrix fill
@@ -83,11 +83,11 @@ namespace ARACore
                 Gizmos.color = new Color(1, 1, 0, 0.75F);
                 Gizmos.DrawCube(key, Vector3.one * .99f);
             }
-            for (int i = 0; i < MovementManager.MAX_ENTITIES; i++)
-            {
-                Gizmos.color = new Color(.2f, .9f, .2f);
-                Gizmos.DrawRay(MovementManager.currentPosition[i], MovementManager.pixelTarget[i] - MovementManager.currentPosition[i]);
-            }
+            //for (int i = 0; i < MovementManager.MAX_ENTITIES; i++)
+            //{
+            //    Gizmos.color = new Color(.2f, .9f, .2f);
+            //    Gizmos.DrawRay(MovementManager.currentPosition[i], MovementManager.pixelTarget[i] - MovementManager.currentPosition[i]);
+            //}
         }
 
         void FixedUpdate()

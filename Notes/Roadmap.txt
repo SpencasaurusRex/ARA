@@ -1,9 +1,9 @@
 Finish movement system
-	Minor optimizations
 	Up, down, forward, back, left right
-	Conga line problem
-	Tie movement to controls for now, for testing
-	Camera controls
+	- Conga line problem
+	- Tie movement to controls for now, for testing
+	Minor optimizations
+	 C-amera controls
 
 Chunk system, infinite world
 	Blocks
@@ -63,9 +63,10 @@ Gameplay
 Rendering system
 	Batch rendering
 
-Minor Features
-	In-Game Text-Editor/debugger
+Editor
 	Alternative text editor open
+	In-Game Text-Editor/debugger
+	
 	
 Polish
 	Main menu
@@ -80,7 +81,7 @@ Polish
 		- Move TileObject info to arrays handled by TileObject manager
 
 Far Future
-	Custom language
+	Custom language (USE MOONSHARP INSTEAD)
 	In-Game editor
 	Modding API
 	Challenge modes?

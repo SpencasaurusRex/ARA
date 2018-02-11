@@ -68,10 +68,6 @@ namespace ARACore
         public static TileEntityAction[] currentAction = new TileEntityAction[MAX_ENTITIES];
         public static TileEntityAction[] targetAction = new TileEntityAction[MAX_ENTITIES];
         public static TileEntityActionResult[] actionResult = new TileEntityActionResult[MAX_ENTITIES];
-
-        // Non-system fields
-        public static Vector3Int[] pixelTarget = new Vector3Int[MAX_ENTITIES];
-        public static Vector3Int[] startingPosition = new Vector3Int[MAX_ENTITIES];
         #endregion
 
         #region Private Methods
@@ -106,131 +102,47 @@ namespace ARACore
                 return TileEntityAction.TurnLeft;
             }
         }
-
-        private static void MoveTowardsTargets()
-        {
-            for (uint i = 0; i < currentTileEntityId; i++)
-            {
-                if (currentAction[i] == TileEntityAction.Idle)
-                {
-                    Vector3Int target = targetState == 0 ? pixelTarget[i] : startingPosition[i];
-
-                    // If the last action was unsuccessful, do a random move
-                    if (actionResult[i] == TileEntityActionResult.Blocked && UnityEngine.Random.value < .1f)
-                    {
-                        int a = UnityEngine.Random.Range(0, 4);
-                        RegisterAction(i, (TileEntityAction)a);
-                        continue;
-                    }
-
-                    Vector3Int dm = target - currentPosition[i];
-                    int totalDistance = Mathf.Abs(dm.x) + Mathf.Abs(dm.y) + Mathf.Abs(dm.z);
-                    if (totalDistance == 0)
-                    {
-                        continue;
-                    }
-                    float chanceX = (float)Mathf.Abs(dm.x) / totalDistance;
-                    float chanceY = chanceX + (float)Mathf.Abs(dm.y) / totalDistance;
-                    float r = UnityEngine.Random.value;
-
-                    if (r < chanceX)
-                    {
-                        if (dm.x < 0)
-                        {
-                            if (currentHeading[i] != HEADING_WEST)
-                            {
-                                RegisterAction(i, Head(currentHeading[i], HEADING_WEST));
-                                continue;
-                            }
-                            else
-                            {
-                                RegisterAction(i, TileEntityAction.Forward);
-                                continue;
-                            }
-                        }
-                        else if (dm.x > 0)
-                        {
-                            if (currentHeading[i] != HEADING_EAST)
-                            {
-                                RegisterAction(i, Head(currentHeading[i], HEADING_EAST));
-                                continue;
-                            }
-                            else
-                            {
-                                RegisterAction(i, TileEntityAction.Forward);
-                                continue;
-                            }
-                        }
-                    }
-                    else if (r < chanceY)
-                    {
-                        if (dm.y < 0)
-                        {
-                            RegisterAction(i, TileEntityAction.Down);
-                            continue;
-                        }
-                        else if (dm.y > 0)
-                        {
-                            RegisterAction(i, TileEntityAction.Up);
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        if (dm.z < 0)
-                        {
-                            if (currentHeading[i] != HEADING_SOUTH)
-                            {
-                                RegisterAction(i, Head(currentHeading[i], HEADING_SOUTH));
-                                continue;
-                            }
-                            else
-                            {
-                                RegisterAction(i, TileEntityAction.Forward);
-                                continue;
-                            }
-                        }
-                        else if (dm.z > 0)
-                        {
-                            if (currentHeading[i] != HEADING_NORTH)
-                            {
-                                RegisterAction(i, Head(currentHeading[i], HEADING_NORTH));
-                                continue;
-                            }
-                            else
-                            {
-                                RegisterAction(i, TileEntityAction.Forward);
-                                continue;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private static int targetState = 0;
-
+        
         #region Interface Methods
         public static void ControlEntities()
         {
             // Control Logic
-            bool allOnTarget = true;
             for (uint i = 0; i < currentTileEntityId; i++)
             {
-                Vector3Int target = targetState == 0 ? pixelTarget[i] : startingPosition[i];
-                if (currentPosition[i] != target)
+                if (i == 0)
                 {
-                    allOnTarget = false;
-                    break;
+                    if (Input.GetKey(KeyCode.D))
+                    {
+                        RegisterAction(i, TileEntityAction.TurnRight);
+                    }
+                    else if (Input.GetKey(KeyCode.A))
+                    {
+                        RegisterAction(i, TileEntityAction.TurnLeft);
+                    }
+                    if (Input.GetKey(KeyCode.W))
+                    {
+                        RegisterAction(i, TileEntityAction.Forward);
+                    }
+                    else if (Input.GetKey(KeyCode.S))
+                    {
+                        RegisterAction(i, TileEntityAction.Back);
+                    }
+                    else if (Input.GetKey(KeyCode.Q))
+                    {
+                        RegisterAction(i, TileEntityAction.Up);
+                    }
+                    else if (Input.GetKey(KeyCode.E))
+                    {
+                        RegisterAction(i, TileEntityAction.Down);
+                    }
+                }
+                else if (currentAction[i] == TileEntityAction.Idle)
+                {
+                    TileEntityAction action = TileEntityAction.Forward;
+                    //TileEntityAction action = (TileEntityAction)UnityEngine.Random.Range(0, 6);
+                    RegisterAction(i, action);
                 }
             }
-            if (allOnTarget)
-            {
-                targetState = (targetState + 1) % 2;
-                return;
-            }
-
-            MoveTowardsTargets();
         }
 
         public static void Tick()
@@ -303,7 +215,6 @@ namespace ARACore
 
             tileObject[id] = o;
             currentPosition[id] = startingLocation;
-            startingPosition[id] = startingLocation;
 
             movementTime[id] = moveTime;
             turningTime[id] = turnTime;
