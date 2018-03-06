@@ -1,0 +1,60 @@
+Phase 1 - Requests
+    All entities request moves to new tiles
+    If movement blocked by block, perform forward checking
+      It is safe to award the movement to the entity moving forward in the same direction,
+      because anything else is going to be blocked by the ghost
+
+    The most qualified entity is updated as more entities request the same tile
+
+Phase 2 - Assignment
+    All entities that are awarded the move, make a Move or Turn component accordingly
+    Create a ghost block
+    //    Back checking is performed
+    //    It is safe to award movement to the entity behind an entity that was just allowed to
+    //    move because no other entity would have been allowed to move into that spot
+
+Phase 3 - Move
+    Based on Move/Turn components, update current position/rotation
+    Check if we're done moving, if so remove those entries
+
+MovementEntity : struct
+   position     : Vector3
+    rotation     : Quaternion
+    ticksPerTile : int
+   ticksPerTurn : int
+TileMove : struct
+   id               : ulong
+   ticksPerTile     : int
+   startingPosition : Vector3Int
+   targetPosition   : Vector3Int
+Turn : struct
+   id               : ulong
+   ticksPerTurn     : int
+   startingRotation : Quaternion
+   targetRotation   : Quaternion
+MovementCheck : struct
+    direction    : Direction
+    tilePosition : Vector3Int
+
+// Added On   : TileEntityManager.RegisterTileEntity()
+// Updated On : MovementManager.Move() when we're done, set the new tile position, and new heading 
+// Removed On : TileEntityManager.DestroyTileEntity()
+Dictionary<ulong, MovementEntity> movementEntities
+
+// Added On   : MovementManager.RequestMove()
+// Updated On : MovementManager.RequestMove() overwrites with more qualified requests
+// Removed On : MovementManager.Tick() - Move Phase
+Dictionary<Vector3Int, TileMove> tileMoveRequests
+
+// Added On   : MovementManager.Tick() - Assignment Phase
+// Removed On : MovementManager.Tick() - Move Phase
+Dictionary<ulong, TileMove> awardedMoves
+
+// Added On   : MovementManager.RequestMove()
+// Removed On : MovementManager.Tick() - Move Phase
+Dictionary<ulong, Turn> awardedTurns
+
+// A tileCheck left behind something that could move. Erased when something uses it
+// Added On   : MovementManager.Tick() - Assignment Phase
+// Removed On : MovementManager.Tick() - Move Phase
+Dictionary<MovementCheck, ulong> forwardChecks

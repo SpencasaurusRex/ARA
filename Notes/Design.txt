@@ -29,6 +29,9 @@ Crafting
     Conveyor belt controls
         Robot controls movement
 
+Storage
+    
+
 Resources
     Raw
         Iron Ore
@@ -43,9 +46,10 @@ Resources
         Silicon
         Glass
 
-
 Research
     Communication array
+        Trade
+
 
 Power Generation
     Renewable

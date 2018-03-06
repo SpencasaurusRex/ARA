@@ -5,9 +5,7 @@ using UnityEngine;
 namespace ARACore
 {
     public class Manager : MonoBehaviour {
-        public TileObject TileEntity;
-        public CameraFollow cf;
-        public Texture2D sourceTexture;
+        public TileEntity TileEntity;
 
         private void Start()
         {
@@ -46,12 +44,15 @@ namespace ARACore
             //    }
             //}
 
-            // Opposing sides
-            for (int i = 0; i < MovementManager.CHUNK_LENGTH_X / 2; i++)
-            {
-                var obj = Instantiate(TileEntity);
-                MovementManager.RegisterTileEntity(obj, new Vector3Int(i, 0, 0), 10, 10, 0);
-            }
+            //var obj = Instantiate(TileEntity);
+            //MovementManager.RegisterTileEntity(obj, new Vector3Int(0, 0, 0), 50, 50, 0);
+            //// Opposing sides
+            //for (int i = 0; i < MovementManager.CHUNK_LENGTH_X / 2; i++)
+            //{
+            //    obj = Instantiate(TileEntity);
+            //    MovementManager.RegisterTileEntity(obj, new Vector3Int(i, 0, 0), 10, 10, 0);
+                    
+            //}
             //for (int i = 0; i < MovementManager.CHUNK_LENGTH_X; i++)
             //{
             //    var obj = Instantiate(TileEntity);
@@ -76,24 +77,19 @@ namespace ARACore
             #endregion
         }
 
-        void OnDrawGizmosSelected()
-        {
-            foreach (var key in MovementManager.blocked.Keys)
-            {
-                Gizmos.color = new Color(1, 1, 0, 0.75F);
-                Gizmos.DrawCube(key, Vector3.one * .99f);
-            }
-            //for (int i = 0; i < MovementManager.MAX_ENTITIES; i++)
-            //{
-            //    Gizmos.color = new Color(.2f, .9f, .2f);
-            //    Gizmos.DrawRay(MovementManager.currentPosition[i], MovementManager.pixelTarget[i] - MovementManager.currentPosition[i]);
-            //}
-        }
+        //void OnDrawGizmosSelected()
+        //{
+        //    foreach (var key in MovementManager.blocked.Keys)
+        //    {
+        //        Gizmos.color = new Color(1, 1, 0, 0.75F);
+        //        Gizmos.DrawCube(key, Vector3.one * .99f);
+        //    }
+        //}
 
-        void FixedUpdate()
-        {
-            MovementManager.Tick();
-            MovementManager.ControlEntities();
-        }
+        //void FixedUpdate()
+        //{
+        //    MovementManager.Tick();
+        //    MovementManager.ControlEntities();
+        //}
     }
 }

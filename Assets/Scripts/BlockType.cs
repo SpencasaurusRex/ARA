@@ -7,8 +7,9 @@ namespace ARACore
 {
     public enum BlockType : byte
     {
-        Null = 0,
-        Air = 1,
+        Null  = 0, // TODO: get rid of this
+        Air   = 1,
         Grass = 2,
+        Robot = 3,
     }
 }

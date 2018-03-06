@@ -4,313 +4,209 @@ using UnityEngine;
 
 namespace ARACore
 {
-    public class Vector3IntEqualityComparer : IEqualityComparer<Vector3Int>
+    public enum MovementAction
     {
-        public bool Equals(Vector3Int a, Vector3Int b)
-        {
-            return a.x == b.x && a.y == b.y && a.z == b.z;
-        }
-
-        public int GetHashCode(Vector3Int obj)
-        {
-            return obj.GetHashCode();
-        }
+        Forward,
+        Up,
+        Back,
+        Down,
+        TurnLeft,
+        TurnRight
     }
 
-    public static class MovementManager
+    public enum Direction
     {
-        public static int HEADING_EAST = 0;
-        public static int HEADING_NORTH = 1;
-        public static int HEADING_WEST = 2;
-        public static int HEADING_SOUTH = 3;
+        East,
+        North,
+        West,
+        South,
+        Up,
+        Down,
+    }
 
-        public enum TileEntityActionResult : byte
+    public class MovementManager
+    {
+        #region Movement Related Types
+        public struct MovementEntity
         {
-            Success,
-            Blocked,
-            OutOfFuel,
-            AlreadyMoving,
+            public Vector3 position;
+            public Quaternion rotation;
+            public Vector3Int tilePosition;
+            public int heading;
+            public int ticksPerTile;
+            public int ticksPerTurn;
         }
 
-        public enum TileEntityAction : int
+        private struct TileMove
         {
-            Forward,
-            Up,
-            Back,
-            Down,
-            TurnLeft,
-            TurnRight,
-            Idle
+            public ulong id;
+            public int progress;
+            public Vector3Int startingTile;
+            public Vector3Int targetTile;
+            public Direction direction;
+            // TODO: Benchark using startingLoc, targetLoc here
         }
 
-        #region Fields
-        public const uint MAX_ENTITIES = 1020;
-        public const int CHUNK_LENGTH_X = 200;
-        public const int CHUNK_LENGTH_Z = 110;
-        public const int CHUNK_HEIGHT = 9;
-
-        static uint currentTileEntityId;
-        // Who is currently registered to move into a spot
-        static Dictionary<Vector3Int, uint> registeredMoves = new Dictionary<Vector3Int, uint>(new Vector3IntEqualityComparer());
-        // Tiles that are blocked
-        public static Dictionary<Vector3Int, uint> blocked = new Dictionary<Vector3Int, uint>(new Vector3IntEqualityComparer());
-
-        // TileEntity fields
-        public static TileObject[] tileObject = new TileObject[MAX_ENTITIES];
-        public static int[] movementTime = new int[MAX_ENTITIES];
-        public static int[] turningTime = new int[MAX_ENTITIES];
-        public static int[] currentMovingTicks = new int[MAX_ENTITIES];
-        public static int[] currentTurningTicks = new int[MAX_ENTITIES];
-        public static Vector3Int[] currentPosition = new Vector3Int[MAX_ENTITIES];
-        public static int[] currentHeading = new int[MAX_ENTITIES];
-        public static Vector3Int[] targetPosition = new Vector3Int[MAX_ENTITIES];
-        public static int[] targetHeading = new int[MAX_ENTITIES];
-        public static TileEntityAction[] currentAction = new TileEntityAction[MAX_ENTITIES];
-        public static TileEntityAction[] targetAction = new TileEntityAction[MAX_ENTITIES];
-        public static TileEntityActionResult[] actionResult = new TileEntityActionResult[MAX_ENTITIES];
-        #endregion
-
-        #region Private Methods
-        private static bool IsBlocked(Vector3Int loc)
+        private struct Turn
         {
-            return blocked.ContainsKey(loc);
+            public ulong id;
+            public int progress;
+            public int targetHeading;
+            public Quaternion startingRotation;
+            public Quaternion targetRotation;
         }
 
-        private static void Unblock(Vector3Int loc)
+        private struct MovementCheck
         {
-            if (!blocked.ContainsKey(loc))
-            {
-                throw new Exception("Attempt to unblock " + loc.ToString() + " that wasn't blocked");
-            }
-            blocked.Remove(loc);
-        }
-
-        private static bool InBounds(Vector3Int loc)
-        {
-            return loc.x >= 0 && loc.x < CHUNK_LENGTH_X && loc.y >= 0 && loc.y < CHUNK_HEIGHT && loc.z >= 0 && loc.z < CHUNK_LENGTH_Z;
+            public Direction direction;
+            public Vector3 tilePosition;
         }
         #endregion
 
-        private static TileEntityAction Head(int currentHeading, int targetHeading)
+        #region EqualityComparers
+        private class MovementCheckEqualityComparer : IEqualityComparer<MovementCheck>
         {
-            if (Util.EuclideanMod(currentHeading - 1, 4) == targetHeading)
+            public bool Equals(MovementCheck x, MovementCheck y)
             {
-                return TileEntityAction.TurnRight;
+                return x.tilePosition == y.tilePosition && x.direction == y.direction;
             }
-            else 
+
+            public int GetHashCode(MovementCheck mc)
             {
-                return TileEntityAction.TurnLeft;
+                return mc.tilePosition.GetHashCode() * mc.direction.GetHashCode() << 4;
             }
         }
+        #endregion
+
+        Dictionary<ulong, MovementEntity> movementEntities;
+        Dictionary<Vector3Int, TileMove> tileMoveRequests;
+        Dictionary<ulong, TileMove> awardedMoves;
+        Dictionary<ulong, Turn> awardedTurns;
+        Dictionary<MovementCheck, ulong> forwardChecks;
         
-        #region Interface Methods
-        public static void ControlEntities()
+        public MovementManager()
         {
-            // Control Logic
-            for (uint i = 0; i < currentTileEntityId; i++)
-            {
-                if (i == 0)
-                {
-                    if (Input.GetKey(KeyCode.D))
-                    {
-                        RegisterAction(i, TileEntityAction.TurnRight);
-                    }
-                    else if (Input.GetKey(KeyCode.A))
-                    {
-                        RegisterAction(i, TileEntityAction.TurnLeft);
-                    }
-                    if (Input.GetKey(KeyCode.W))
-                    {
-                        RegisterAction(i, TileEntityAction.Forward);
-                    }
-                    else if (Input.GetKey(KeyCode.S))
-                    {
-                        RegisterAction(i, TileEntityAction.Back);
-                    }
-                    else if (Input.GetKey(KeyCode.Q))
-                    {
-                        RegisterAction(i, TileEntityAction.Up);
-                    }
-                    else if (Input.GetKey(KeyCode.E))
-                    {
-                        RegisterAction(i, TileEntityAction.Down);
-                    }
-                }
-                else if (currentAction[i] == TileEntityAction.Idle)
-                {
-                    TileEntityAction action = TileEntityAction.Forward;
-                    //TileEntityAction action = (TileEntityAction)UnityEngine.Random.Range(0, 6);
-                    RegisterAction(i, action);
-                }
-            }
+            movementEntities = new Dictionary<ulong, MovementEntity>();
+            tileMoveRequests = new Dictionary<Vector3Int, TileMove>(new Vector3IntEqualityComparer());
+            awardedMoves = new Dictionary<ulong, TileMove>();
+            awardedTurns = new Dictionary<ulong, Turn>();
+            forwardChecks = new Dictionary<MovementCheck, ulong>(new MovementCheckEqualityComparer());
         }
 
-        public static void Tick()
+        public void RequestMovement(ulong id, MovementAction action)
         {
-            var keys = registeredMoves.Keys;
-            foreach (var destination in keys)
+            MovementEntity movementEntity = movementEntities[id];
+            if (action == MovementAction.TurnLeft || action == MovementAction.TurnRight)
             {
-                uint id = registeredMoves[destination];
-                currentAction[id] = targetAction[id];
-
-                blocked.Add(destination, id);
-            }
-            
-            // Simulate movement
-            for (uint i = 0; i < currentTileEntityId; i++)
-            {
-                TileEntityAction action = currentAction[i];
-                if (action == TileEntityAction.Idle)
+                // TODO optimize this
+                int targetHeading = movementEntity.heading;
+                if (action == MovementAction.TurnLeft)
                 {
-                    continue;
+                    targetHeading = (targetHeading + 1) % 4;
                 }
-                // If the action is a movement
-                if (action <= TileEntityAction.Down && action >= TileEntityAction.Forward)
+                if (action == MovementAction.TurnRight)
                 {
-                    int currentTicks = ++currentMovingTicks[i];
-                    int totalTicks = movementTime[i];
-                    Vector3Int currentLoc = currentPosition[i];
-                    tileObject[i].transform.position = Vector3.Lerp(currentLoc, targetPosition[i], (float)currentTicks / totalTicks);
-                    if (currentTicks >= totalTicks)
+                    targetHeading = targetHeading - 1;
+                    if (targetHeading == -1)
                     {
-                        Unblock(currentLoc);
-
-                        currentMovingTicks[i] = 0;
-                        currentPosition[i] = targetPosition[i];
-                        currentAction[i] = TileEntityAction.Idle;
+                        targetHeading = 3;
                     }
                 }
-                // If the action is a turn
-                if (action == TileEntityAction.TurnLeft || action == TileEntityAction.TurnRight)
+
+                Turn turn = new Turn();
+                turn.id = id;
+                turn.startingRotation = Util.ToQuaternion(movementEntity.heading);
+                turn.targetRotation = Util.ToQuaternion(targetHeading);
+                turn.targetHeading = targetHeading;
+
+                awardedTurns.Add(id, turn);
+                return;
+            }
+
+            // TODO calculate target
+            Vector3Int targetTile = movementEntity.tilePosition;
+            Direction direction = Util.ToDirection(action, movementEntity.heading);
+
+            // Check for other movers
+            // TODO: Check block system
+            //if (!ChunkSet.World.IsAir())
+            //{
+            //    // TODO: Check forwardChecks
+            //    if (false)
+            //    {
+            //        return;
+            //    }
+            //}
+
+            TileMove move = new TileMove();
+            move.id = id;
+            move.startingTile = movementEntity.tilePosition;
+            move.targetTile = targetTile;
+
+            if (tileMoveRequests.ContainsKey(targetTile))
+            {
+                // Determine priority
+                // TODO
+                if (true)
                 {
-                    int currentTicks = ++currentTurningTicks[i];
-                    int totalTicks = turningTime[i];
-                    Quaternion currentRot = Util.ToQuaternion(currentHeading[i]);
-                    Quaternion targetRot = Util.ToQuaternion(targetHeading[i]);
-                    tileObject[i].transform.rotation = Quaternion.Lerp(currentRot, targetRot, (float)currentTicks / totalTicks);
-                    if (currentTicks >= totalTicks)
-                    {
-                        currentTurningTicks[i] = 0;
-                        currentAction[i] = TileEntityAction.Idle;
-                        currentHeading[i] = targetHeading[i];
-                    }
+                    tileMoveRequests[targetTile] = move;
                 }
-            }
-            registeredMoves.Clear();
-        }
-
-        public static bool RegisterTileEntity(TileObject o, Vector3Int startingLocation, int moveTime, int turnTime, int heading = 0)
-        {
-            if (IsBlocked(startingLocation) || currentTileEntityId >= MAX_ENTITIES)
-            {
-                GameObject.Destroy(o.gameObject);
-                return false;
-            }
-
-            o.transform.position = startingLocation;
-            o.transform.rotation = Util.ToQuaternion(heading);
-
-            uint id = currentTileEntityId++;
-            o.id = id;
-
-            tileObject[id] = o;
-            currentPosition[id] = startingLocation;
-
-            movementTime[id] = moveTime;
-            turningTime[id] = turnTime;
-            currentHeading[id] = heading;
-            currentAction[id] = TileEntityAction.Idle;
-
-            blocked.Add(startingLocation, id);
-            return true;
-        }
-
-        public static void RegisterAction(uint id, TileEntityAction action)
-        {
-            // TODO prevent this from being called multiple times a frame
-#if DEBUG
-            if (action < 0 || (int)action >= 6) throw new Exception("Incorrect action");
-#endif
-            if (currentAction[id] != TileEntityAction.Idle || action == TileEntityAction.Idle)
-            {
-                actionResult[id] = TileEntityActionResult.AlreadyMoving;
-                return;
-            }
-            if (action == TileEntityAction.TurnLeft)
-            {
-                targetHeading[id] = (targetHeading[id] + 1) % 4;
-                currentAction[id] = action;
-                actionResult[id] = TileEntityActionResult.Success;
-                return;
-            }
-            else if (action == TileEntityAction.TurnRight)
-            {
-                targetHeading[id] = Util.EuclideanMod(targetHeading[id] - 1, 4);
-                currentAction[id] = action;
-                actionResult[id] = TileEntityActionResult.Success;
-                return;
             }
             else
             {
-                // Heading = 0: East, 1: North, 2: West, 3:South
-                // Action =  0: Forward, 1: Up, 2: Back, 3: Down, TurnLeft, TurnRight
-                int h = currentHeading[id];
-                int a = (int)action;
-                int horizontalActionModifier = (Mathf.Abs(a - 2) - 1);
-                targetPosition[id].x = currentPosition[id].x + horizontalActionModifier * (Mathf.Abs((int)h - 2) - 1);
-                targetPosition[id].y = currentPosition[id].y - Mathf.Abs(a - 1) + 1;
-                targetPosition[id].z = currentPosition[id].z + horizontalActionModifier * (-Mathf.Abs((int)h - 1) + 1);
-
-                var targetLoc = targetPosition[id];
-
-                if (!InBounds(targetLoc) || IsBlocked(targetLoc))
-                {
-                    //Console.WriteLine("{0} can't move. {1},{2},{3} is blocked", id, targetX, targetY, targetZ);
-                    actionResult[id] = TileEntityActionResult.Blocked;
-                    return;
-                }
-                // We're good to register the movement
-                targetAction[id] = action;
-                RegisterMove(id, targetLoc);
+                // Nothing was in our way
+                tileMoveRequests[targetTile] = move;
             }
         }
 
-        public static void RegisterMove(uint id, Vector3Int targetLoc)
+        public void Tick()
         {
-            //Console.WriteLine("Attempt Register move for {0} at {1},{2},{3}", id, targetX, targetY, targetZ);
-            // Calculate collision
-            if (registeredMoves.ContainsKey(targetLoc))
+            // Phase 2 - Assignment
+            foreach (var request in tileMoveRequests)
             {
-                uint otherId = registeredMoves[targetLoc];
-                int ourMovementTime = movementTime[id];
-                int theirMovementTime = movementTime[otherId];
+                TileMove tileMove = request.Value;
+                awardedMoves.Add(request.Value.id, request.Value);
 
-                // First compare speeds, faster moving entities get to move first
-                if (ourMovementTime == theirMovementTime)
-                {
-                    TileEntityAction ourTargetAction = targetAction[id];
-                    TileEntityAction theirTargetAction = targetAction[otherId];
-                    // Now check our direction as a last resort
-                    // Down before up before, East, North, West
-                    if (ourTargetAction == TileEntityAction.Down) goto Overwrite;
-                    if (theirTargetAction == TileEntityAction.Down) goto Blocked;
-                    if (ourTargetAction == TileEntityAction.Up) goto Overwrite;
-                    if (targetAction[otherId] == TileEntityAction.Up) goto Blocked;
-                    if (currentHeading[id] > currentHeading[otherId]) goto Blocked;
-                }
-                else if (ourMovementTime > theirMovementTime)
-                {
-                    goto Blocked;
-                }
+                // TODO: Create ghost block
+                // TODO: Create forward check
+                //forwardChecks.Add(tileMove.id, );
+                tileMoveRequests.Remove(request.Key);
             }
-            Overwrite:
-            //Console.WriteLine("Movement registered for " + id);
-            registeredMoves[targetLoc] = id;
-            actionResult[id] = TileEntityActionResult.Success;
-            return;
-            Blocked:
-            actionResult[id] = TileEntityActionResult.Blocked;
-       }
-        #endregion
+
+            // Phase 3 - Movement
+            foreach (var movements in awardedMoves)
+            {
+                TileMove move = movements.Value;
+                MovementEntity entity = movementEntities[move.id];
+                if (move.progress >= entity.ticksPerTile)
+                {
+                    MovementCheck check = new MovementCheck();
+                    check.direction = move.direction;
+                    check.tilePosition = move.targetTile;
+                    forwardChecks.Remove(check);
+
+                    // TODO: clean up ghost block
+
+                    awardedMoves.Remove(move.id);
+                    return;
+                }
+                float movementProgress = (float)move.progress / entity.ticksPerTile;
+                entity.position = Vector3.Lerp(move.startingTile, move.targetTile, movementProgress);
+            }
+
+            foreach (var turns in awardedTurns)
+            {
+                Turn turn = turns.Value;
+                MovementEntity entity = movementEntities[turn.id];
+                if (turn.progress >= entity.ticksPerTurn)
+                {
+                    entity.heading = turn.targetHeading;
+                    awardedTurns.Remove(turn.id);
+                    return;
+                }
+                float turningProgress = (float)turn.progress / entity.ticksPerTurn;
+                entity.rotation = Quaternion.Slerp(turn.startingRotation, turn.targetRotation, turningProgress);
+            }
+        }
     }
 }
