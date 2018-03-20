@@ -8,11 +8,9 @@ namespace ARACore
     {
         public ulong id;
 
-        #region Unity Methods
-        void Start()
+        private void Start()
         {
-
+            
         }
-        #endregion
     }
 }

@@ -1,0 +1,74 @@
+ChunkManager
+    
+
+MovementManager
+    registeredMoves
+
+    // Should be careful here, need to check entityLocations and Block positions when attempting to move to a new spot
+
+    // Should also make sure that block placing takes place on a different update tick, 
+    // to make sure we can't both move into a tile and place a block into a tile on the same tick
+    entityLocations 
+
+
+EntityPool
+    movementTotal
+    turningTotal
+    movementProgress
+    turningProgress
+    currentTilePosition
+    targetTilePosition
+    currentHeading
+    targetHeading
+    currentAction
+    targetAction
+
+
+Update
+    In the most simple case, No blocks need updated, Just MovementManager
+    When we add machine, we mark the Chunk as needsUpdate
+    Then when we iterate over all of the blocks in the chunk, we can only 
+    pay attention to BlockTypes with the first bit set to 1
+    Any chunks that have needsUpdate marked will have to be kept loaded through the whole game
+
+
+Entities
+    Functionality of Entities is managed centrally by the MovementManager
+    The entities themselves are stored in EntityPool
+
+ID system
+    The ID system should be centralized in the MovementManager
+    In the most simple case we just increment the currentId field to get the next ID
+
+Phase 1 - Registration
+    All entities register for their movements    
+    For each register check if anyone else is registered to move into the tile, 
+        overwrite if necessary
+
+Phase 2 - Assignment
+    Set the current action for the tile entity that was awarded the tile
+    Back-prop to anyone that was trying to move into our tile
+
+
+Data components
+    BackProp
+    ClearingMovement
+
+
+
+Movement
+    ticksPerTileMovement
+    movementProgress
+
+    ticksPerTurn
+    turnProgress
+
+    currentTilePosition
+    targetTilePosition
+
+Turn
+    currentHeading
+    targetHeading
+
+    currentAction
+    targetAction

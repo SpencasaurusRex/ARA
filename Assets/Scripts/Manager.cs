@@ -6,14 +6,15 @@ namespace ARACore
 {
     public class Manager : MonoBehaviour {
         public TileEntity TileEntity;
+        public static MovementManager movement;
 
         private void Start()
         {
             #region Test setups
+            movement = new MovementManager();
+
             // Single block
-            //var obj = Instantiate(TileEntity);
-            //MovementManager.RegisterTileEntity(obj, new Vector3Int(0, 0, 0), 15, 30);
-            //cf.Init(obj.transform);
+            InstantiateTileEntity(TileEntity);
 
             // Random fill
             //for (int i = 0; i < MovementManager.MAX_ENTITIES; i++)
@@ -51,7 +52,7 @@ namespace ARACore
             //{
             //    obj = Instantiate(TileEntity);
             //    MovementManager.RegisterTileEntity(obj, new Vector3Int(i, 0, 0), 10, 10, 0);
-                    
+
             //}
             //for (int i = 0; i < MovementManager.CHUNK_LENGTH_X; i++)
             //{
@@ -91,5 +92,21 @@ namespace ARACore
         //    MovementManager.Tick();
         //    MovementManager.ControlEntities();
         //}
+
+        private TileEntity InstantiateTileEntity(TileEntity entity)
+        {
+            var createdEntity = Instantiate<TileEntity>(TileEntity);
+            movement.RegisterTileEntity(createdEntity);
+            return createdEntity;
+        }
+
+        private TileEntity InstantiateTileEntity(TileEntity entity, Vector3 position, Quaternion rotation)
+        {
+            var createdEntity = Instantiate<TileEntity>(TileEntity);
+            createdEntity.transform.position = position;
+            createdEntity.transform.rotation = rotation;
+            movement.RegisterTileEntity(createdEntity);
+            return createdEntity;
+        }
     }
 }

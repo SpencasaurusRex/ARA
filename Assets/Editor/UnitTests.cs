@@ -13,20 +13,8 @@ public class UnitTest {
         for (int h = 0; h < 4; h++)
         {
             Assert.AreEqual((int)Util.ToDirection(MovementAction.Forward, h), h);
-        }
-        
-        for (int h = 0; h < 4; h++)
-        {
             Assert.AreEqual((int)Util.ToDirection(MovementAction.Back, h), (h + 2) % 4);
-        }
-
-        for (int h = 0; h < 4; h++)
-        {
             Assert.AreEqual(Util.ToDirection(MovementAction.Up, h), Direction.Up);
-        }
-
-        for (int h = 0; h < 4; h++)
-        {
             Assert.AreEqual(Util.ToDirection(MovementAction.Down, h), Direction.Down);
         }
     }

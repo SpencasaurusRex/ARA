@@ -93,6 +93,15 @@ namespace ARACore
             forwardChecks = new Dictionary<MovementCheck, ulong>(new MovementCheckEqualityComparer());
         }
 
+        public void RegisterTileEntity(TileEntity entity)
+        {
+            var movementEntity = new MovementEntity();
+            movementEntity.position = entity.transform.position;
+            movementEntity.rotation = entity.transform.rotation;            
+            movementEntity.tilePosition = Vector3Int.FloorToInt(entity.transform.position);
+            movementEntities.Add(entity.id, movementEntity);
+        }
+
         public void RequestMovement(ulong id, MovementAction action)
         {
             MovementEntity movementEntity = movementEntities[id];
