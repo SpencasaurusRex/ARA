@@ -13,23 +13,23 @@ namespace ARACore
 
         void OnDrawGizmos()
         {
-            for (int x = 0; x < 10; x++)
-            {
-                for (int y = 0; y < 10; y++)
-                {
-                    for (int z = 0; z < 10; z++)
-                    {
-                        if (world != null)
-                        {
-                            if (world.GetBlockType(x, y, z) == BlockType.Air)
-                            {
-                                continue;
-                            }
-                        }
-                        Gizmos.DrawCube(new Vector3(x, y, z), new Vector3(.5f, .5f, .5f));
-                    }
-                }
-            }
+            //for (int x = 0; x < 100; x++)
+            //{
+            //    for (int y = 0; y < 100; y++)
+            //    {
+            //        for (int z = 0; z < 100; z++)
+            //        {
+            //            if (world != null)
+            //            {
+            //                if (world.GetBlockType(x, y, z) == BlockType.Air)
+            //                {
+            //                    continue;
+            //                }
+            //            }
+            //            Gizmos.DrawCube(new Vector3(x, y, z), new Vector3(.5f, .5f, .5f));
+            //        }
+            //    }
+            //}
         }
 
         private void Start()
@@ -43,14 +43,14 @@ namespace ARACore
             //InstantiateTileEntity(TileEntity);
 
             // Random fill
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 10; i++)
             {
                 TileEntity obj;
                 do
                 {
-                    int x = 0;// Random.Range(0, Chunk.CHUNK_SIZE_X);
-                    int y = 0;// Random.Range(0, Chunk.CHUNK_SIZE_Y);
-                    int z = 0;// Random.Range(0, Chunk.CHUNK_SIZE_Z);
+                    int x = Random.Range(0, Chunk.CHUNK_SIZE_X);
+                    int y = Random.Range(0, Chunk.CHUNK_SIZE_Y);
+                    int z = Random.Range(0, Chunk.CHUNK_SIZE_Z);
                     obj = Instantiate(prefab);
                     obj.transform.position = new Vector3(x, y, z);
                 }
@@ -118,7 +118,14 @@ namespace ARACore
             movement.Tick();
             foreach (var robot in tileEntities)
             {
-                movement.RequestMovement(robot.id, MovementAction.Forward);
+                if (Random.Range(1, 3) == 1)
+                {
+                    movement.RequestMovement(robot.id, MovementAction.Forward);
+                }
+                else
+                {
+                    movement.RequestMovement(robot.id, MovementAction.TurnLeft);
+                }
             }
         }
 

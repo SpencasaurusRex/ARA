@@ -46,7 +46,7 @@ namespace ARACore
             // TODO: Benchark using startingLoc, targetLoc here
         }
 
-        private struct Turn
+        private class Turn
         {
             public ulong id;
             public int progress;
@@ -97,8 +97,8 @@ namespace ARACore
             var movementEntity = new MovementEntity();
             movementEntity.tilePosition = Vector3Int.FloorToInt(entity.transform.position);
             movementEntity.tileEntity = entity;
-            movementEntity.ticksPerTile = 20;
-            movementEntity.ticksPerTurn = 3;
+            movementEntity.ticksPerTile = 10;
+            movementEntity.ticksPerTurn = 20;
             movementEntities.Add(entity.id, movementEntity);
         }
 
@@ -110,7 +110,7 @@ namespace ARACore
         public void RequestMovement(ulong id, MovementAction action)
         {
             // Check if we're already moving
-            if (awardedMoves.ContainsKey(id))
+            if (awardedMoves.ContainsKey(id) || awardedTurns.ContainsKey(id))
             {
                 return;
             }
@@ -269,6 +269,7 @@ namespace ARACore
                     entity.tileEntity.transform.position = move.targetTile;
                     movementEntities[id] = entity;
                     doneMoves.Add(move.id);
+                    continue;
                 }
                 float movementProgress = (float)move.progress / entity.ticksPerTile;
                 entity.tileEntity.transform.position = Vector3.Lerp(move.startingTile, move.targetTile, movementProgress);
@@ -286,9 +287,12 @@ namespace ARACore
                 MovementEntity entity = movementEntities[turn.id];
                 if (turn.progress >= entity.ticksPerTurn)
                 {
+                    movementEntities.Remove(turn.id);
                     entity.heading = turn.targetHeading;
+                    entity.tileEntity.transform.rotation = turn.targetRotation;
+                    movementEntities[turn.id] = entity;
                     doneTurns.Add(turn.id);
-                    return;
+                    continue;
                 }
                 float turningProgress = (float)turn.progress / entity.ticksPerTurn;
                 entity.tileEntity.transform.rotation = Quaternion.Slerp(turn.startingRotation, turn.targetRotation, turningProgress);
