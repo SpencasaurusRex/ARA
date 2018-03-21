@@ -8,24 +8,16 @@ namespace ARACore
 {
     public class ChunkSet
     {
-        private static ChunkSet world;
-        public static ChunkSet World
-        {
-            get
-            {
-                if (world == null)
-                {
-                    world = new ChunkSet();
-                }
-                return world;
-            }
-        }
-
         Dictionary<ChunkCoords, Chunk> chunks;
 
         public ChunkSet()
         {
             chunks = new Dictionary<ChunkCoords, Chunk>();
+        }
+
+        public void SetBlockType(Vector3Int gPosition, BlockType b)
+        {
+            GetChunk(gPosition.x, gPosition.y, gPosition.z).SetBlock(gPosition.x, gPosition.y, gPosition.z, b);
         }
 
         public void SetBlockType(int gx, int gy, int gz, BlockType b)
@@ -36,6 +28,11 @@ namespace ARACore
         public BlockType GetBlockType(int gx, int gy, int gz)
         {
             return GetChunk(gx, gy, gz).GetBlock(gx, gy, gz);
+        }
+
+        public bool IsAir(Vector3Int gPosition)
+        {
+            return GetBlockType(gPosition.x, gPosition.y, gPosition.z) == BlockType.Air;
         }
 
         public bool IsAir(int gx, int gy, int gz)

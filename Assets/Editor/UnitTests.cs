@@ -26,7 +26,7 @@ public class UnitTest {
 
         // Initial BlockType is Null
         BlockType b = chunks.GetBlockType(0, 0, 0);
-        Assert.AreEqual(BlockType.Null, b);
+        Assert.AreEqual(BlockType.Air, b);
 
         // Can set and get blocks
         chunks.SetBlockType(45, -102, 10000, BlockType.Grass);

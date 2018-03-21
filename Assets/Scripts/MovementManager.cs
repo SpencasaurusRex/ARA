@@ -29,15 +29,14 @@ namespace ARACore
         #region Movement Related Types
         public struct MovementEntity
         {
-            public Vector3 position;
-            public Quaternion rotation;
+            public TileEntity tileEntity;
             public Vector3Int tilePosition;
             public int heading;
             public int ticksPerTile;
             public int ticksPerTurn;
         }
 
-        private struct TileMove
+        private class TileMove
         {
             public ulong id;
             public int progress;
@@ -59,7 +58,7 @@ namespace ARACore
         private struct MovementCheck
         {
             public Direction direction;
-            public Vector3 tilePosition;
+            public Vector3Int tilePosition;
         }
         #endregion
 
@@ -83,7 +82,7 @@ namespace ARACore
         Dictionary<ulong, TileMove> awardedMoves;
         Dictionary<ulong, Turn> awardedTurns;
         Dictionary<MovementCheck, ulong> forwardChecks;
-        
+
         public MovementManager()
         {
             movementEntities = new Dictionary<ulong, MovementEntity>();
@@ -96,14 +95,27 @@ namespace ARACore
         public void RegisterTileEntity(TileEntity entity)
         {
             var movementEntity = new MovementEntity();
-            movementEntity.position = entity.transform.position;
-            movementEntity.rotation = entity.transform.rotation;            
             movementEntity.tilePosition = Vector3Int.FloorToInt(entity.transform.position);
+            movementEntity.tileEntity = entity;
+            movementEntity.ticksPerTile = 20;
+            movementEntity.ticksPerTurn = 3;
             movementEntities.Add(entity.id, movementEntity);
+        }
+
+        public void DestroyTileEntity(TileEntity entity)
+        {
+            movementEntities.Remove(entity.id);
         }
 
         public void RequestMovement(ulong id, MovementAction action)
         {
+            // Check if we're already moving
+            if (awardedMoves.ContainsKey(id))
+            {
+                return;
+            }
+
+            // TODO Track return values
             MovementEntity movementEntity = movementEntities[id];
             if (action == MovementAction.TurnLeft || action == MovementAction.TurnRight)
             {
@@ -132,33 +144,82 @@ namespace ARACore
                 return;
             }
 
-            // TODO calculate target
             Vector3Int targetTile = movementEntity.tilePosition;
             Direction direction = Util.ToDirection(action, movementEntity.heading);
-
-            // Check for other movers
-            // TODO: Check block system
-            //if (!ChunkSet.World.IsAir())
-            //{
-            //    // TODO: Check forwardChecks
-            //    if (false)
-            //    {
-            //        return;
-            //    }
-            //}
+            targetTile += Util.ToVector3Int(direction);
 
             TileMove move = new TileMove();
             move.id = id;
             move.startingTile = movementEntity.tilePosition;
             move.targetTile = targetTile;
 
-            if (tileMoveRequests.ContainsKey(targetTile))
+            // Check for other movers
+            if (!Manager.world.IsAir(targetTile))
             {
-                // Determine priority
-                // TODO
-                if (true)
+                MovementCheck forwardCheck;
+                forwardCheck.tilePosition = targetTile;
+                forwardCheck.direction = direction;
+                ulong forwardId;
+                if (forwardChecks.TryGetValue(forwardCheck, out forwardId))
                 {
+                    // Check speeds
+                    TileMove forwardMove;
+                    if (!awardedMoves.TryGetValue(forwardId, out forwardMove))
+                    {
+                        throw new Exception("A forward move data object existed without a corresponding awarded move");
+                    }
+                    MovementEntity forwardEntity;
+                    if (!movementEntities.TryGetValue(forwardId, out forwardEntity))
+                    {
+                        throw new Exception("A forward move data object existed without a coreesponding movement entity");
+                    }
+                    int forwardTime = forwardEntity.ticksPerTile - forwardMove.progress;
+                    if (forwardTime <= movementEntity.ticksPerTile)
+                    {
+                        // We're going to get there later, so it's all good
+                        // Clean up the forward check
+                        forwardChecks.Remove(forwardCheck);
+                        tileMoveRequests[targetTile] = move;
+                        Debug.Log("forward check");
+                        return;
+                    }
+                }
+                else
+                {
+                    // There's something in front of us that isn't moving
+                    Debug.Log(targetTile + " blocked");
+                    return;
+                }
+            }
+            TileMove otherMove;
+            if (tileMoveRequests.TryGetValue(targetTile, out otherMove))
+            {
+                var otherEntity = movementEntities[otherMove.id];
+                // Determine priority
+                if (movementEntity.ticksPerTile == otherEntity.ticksPerTile)
+                {
+                    if (direction < otherMove.direction)
+                    {
+                        tileMoveRequests[targetTile] = move;
+                        return;
+                    }
+                    else
+                    {
+                        Debug.Log("lost priority");
+                        return;
+                    }
+                }
+                else if (movementEntity.ticksPerTile < otherEntity.ticksPerTile)
+                {
+                    // We're faster
                     tileMoveRequests[targetTile] = move;
+                    return;
+                }
+                else
+                {
+                    // We're slower
+                    Debug.Log("too slow");
+                    return;
                 }
             }
             else
@@ -174,47 +235,67 @@ namespace ARACore
             foreach (var request in tileMoveRequests)
             {
                 TileMove tileMove = request.Value;
-                awardedMoves.Add(request.Value.id, request.Value);
+                awardedMoves.Add(request.Value.id, tileMove);
 
-                // TODO: Create ghost block
-                // TODO: Create forward check
-                //forwardChecks.Add(tileMove.id, );
-                tileMoveRequests.Remove(request.Key);
+                Manager.world.SetBlockType(request.Value.targetTile, BlockType.Robot);
+               
+                MovementCheck forwardCheck;
+                forwardCheck.direction = request.Value.direction;
+                forwardCheck.tilePosition = request.Value.startingTile;
+                forwardChecks.Add(forwardCheck, tileMove.id);
             }
+            tileMoveRequests.Clear();
 
             // Phase 3 - Movement
-            foreach (var movements in awardedMoves)
+            List<ulong> doneMoves = new List<ulong>();
+            foreach (var moveKVP in awardedMoves)
             {
-                TileMove move = movements.Value;
-                MovementEntity entity = movementEntities[move.id];
+                var id = moveKVP.Key;
+                var move = moveKVP.Value;
+                move.progress++;
+                MovementEntity entity = movementEntities[id];
                 if (move.progress >= entity.ticksPerTile)
                 {
                     MovementCheck check = new MovementCheck();
                     check.direction = move.direction;
-                    check.tilePosition = move.targetTile;
-                    forwardChecks.Remove(check);
-
-                    // TODO: clean up ghost block
-
-                    awardedMoves.Remove(move.id);
-                    return;
+                    check.tilePosition = move.startingTile;
+                    if (forwardChecks.ContainsKey(check))
+                    {
+                        forwardChecks.Remove(check);
+                        Manager.world.SetBlockType(check.tilePosition, BlockType.Air);
+                    }
+                    movementEntities.Remove(id);
+                    entity.tilePosition = move.targetTile;
+                    entity.tileEntity.transform.position = move.targetTile;
+                    movementEntities[id] = entity;
+                    doneMoves.Add(move.id);
                 }
                 float movementProgress = (float)move.progress / entity.ticksPerTile;
-                entity.position = Vector3.Lerp(move.startingTile, move.targetTile, movementProgress);
+                entity.tileEntity.transform.position = Vector3.Lerp(move.startingTile, move.targetTile, movementProgress);
+            }
+            foreach (var move in doneMoves)
+            {
+                awardedMoves.Remove(move);
             }
 
+            List<ulong> doneTurns = new List<ulong>();
             foreach (var turns in awardedTurns)
             {
                 Turn turn = turns.Value;
+                turn.progress++;
                 MovementEntity entity = movementEntities[turn.id];
                 if (turn.progress >= entity.ticksPerTurn)
                 {
                     entity.heading = turn.targetHeading;
-                    awardedTurns.Remove(turn.id);
+                    doneTurns.Add(turn.id);
                     return;
                 }
                 float turningProgress = (float)turn.progress / entity.ticksPerTurn;
-                entity.rotation = Quaternion.Slerp(turn.startingRotation, turn.targetRotation, turningProgress);
+                entity.tileEntity.transform.rotation = Quaternion.Slerp(turn.startingRotation, turn.targetRotation, turningProgress);
+            }
+            foreach (var turn in doneTurns)
+            {
+                awardedTurns.Remove(turn);
             }
         }
     }

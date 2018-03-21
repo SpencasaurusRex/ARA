@@ -5,31 +5,57 @@ using UnityEngine;
 namespace ARACore
 {
     public class Manager : MonoBehaviour {
-        public TileEntity TileEntity;
+        public TileEntity prefab;
+        private List<TileEntity> tileEntities = new List<TileEntity>();
         public static MovementManager movement;
+        public static ChunkSet world;
+        public static ulong id;
+
+        void OnDrawGizmos()
+        {
+            for (int x = 0; x < 10; x++)
+            {
+                for (int y = 0; y < 10; y++)
+                {
+                    for (int z = 0; z < 10; z++)
+                    {
+                        if (world != null)
+                        {
+                            if (world.GetBlockType(x, y, z) == BlockType.Air)
+                            {
+                                continue;
+                            }
+                        }
+                        Gizmos.DrawCube(new Vector3(x, y, z), new Vector3(.5f, .5f, .5f));
+                    }
+                }
+            }
+        }
 
         private void Start()
         {
             #region Test setups
+
+            world = new ChunkSet();
             movement = new MovementManager();
 
             // Single block
-            InstantiateTileEntity(TileEntity);
+            //InstantiateTileEntity(TileEntity);
 
             // Random fill
-            //for (int i = 0; i < MovementManager.MAX_ENTITIES; i++)
-            //{
-            //    TileObject obj;
-            //    int x, y, z;
-            //    do
-            //    {
-            //        obj = Instantiate(TileEntity);
-            //        x = Random.Range(0, MovementManager.CHUNK_LENGTH_X);
-            //        y = Random.Range(0, MovementManager.CHUNK_HEIGHT);
-            //        z = Random.Range(0, MovementManager.CHUNK_LENGTH_Z);
-            //    }
-            //    while (!MovementManager.RegisterTileEntity(obj, new Vector3Int(x, y, z), 100, 50));
-            //}
+            for (int i = 0; i < 1; i++)
+            {
+                TileEntity obj;
+                do
+                {
+                    int x = 0;// Random.Range(0, Chunk.CHUNK_SIZE_X);
+                    int y = 0;// Random.Range(0, Chunk.CHUNK_SIZE_Y);
+                    int z = 0;// Random.Range(0, Chunk.CHUNK_SIZE_Z);
+                    obj = Instantiate(prefab);
+                    obj.transform.position = new Vector3(x, y, z);
+                }
+                while (!RegisterWithSystems(obj));
+            }
 
             // Read pixel image
             //Color[] pixels = sourceTexture.GetPixels();
@@ -87,26 +113,39 @@ namespace ARACore
         //    }
         //}
 
-        //void FixedUpdate()
-        //{
-        //    MovementManager.Tick();
-        //    MovementManager.ControlEntities();
-        //}
-
-        private TileEntity InstantiateTileEntity(TileEntity entity)
+        void FixedUpdate()
         {
-            var createdEntity = Instantiate<TileEntity>(TileEntity);
-            movement.RegisterTileEntity(createdEntity);
-            return createdEntity;
+            movement.Tick();
+            foreach (var robot in tileEntities)
+            {
+                movement.RequestMovement(robot.id, MovementAction.Forward);
+            }
         }
 
-        private TileEntity InstantiateTileEntity(TileEntity entity, Vector3 position, Quaternion rotation)
+        // TODO Make this deterministic if two entities are being created onto the same tile
+        private bool RegisterWithSystems(TileEntity entity)
         {
-            var createdEntity = Instantiate<TileEntity>(TileEntity);
-            createdEntity.transform.position = position;
-            createdEntity.transform.rotation = rotation;
-            movement.RegisterTileEntity(createdEntity);
-            return createdEntity;
+            // Set ID
+            entity.id = id++;
+
+            // ChunkSet stuff
+            Vector3Int tileLocation = Vector3Int.FloorToInt(entity.transform.position);
+            if (world.IsAir(tileLocation.x, tileLocation.y, tileLocation.z))
+            {
+                world.SetBlockType(tileLocation.x, tileLocation.y, tileLocation.z, BlockType.Robot);
+            }
+            else
+            {
+                id--;
+                Destroy(entity.gameObject);
+                return false;
+            }
+
+            // Movement stuff
+            movement.RegisterTileEntity(entity);
+
+            tileEntities.Add(entity);
+            return true;
         }
     }
 }

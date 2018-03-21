@@ -18,6 +18,23 @@ namespace ARACore
             return ((a % b) + b) % b;
         }
 
+        public static Vector3Int Forward = new Vector3Int(0, 0, 1);
+        public static Vector3Int Back = new Vector3Int(0, 0, -1);
+
+        public static Vector3Int ToVector3Int(Direction dir)
+        {
+            switch (dir)
+            {
+                case Direction.East: return Vector3Int.right;
+                case Direction.North: return Forward;
+                case Direction.West: return Vector3Int.left;
+                case Direction.South: return Back;
+                case Direction.Up: return Vector3Int.up;
+                case Direction.Down: return Vector3Int.down;
+                default: throw new InvalidOperationException("What are you even doing mate?");
+            }
+        }
+
         public static Direction ToDirection(MovementAction action, int heading)
         {
             if (action == MovementAction.TurnLeft || action == MovementAction.TurnRight)
