@@ -95,10 +95,11 @@ namespace ARACore
         public void RegisterTileEntity(TileEntity entity)
         {
             var movementEntity = new MovementEntity();
+            movementEntity.heading = entity.startHeading;
             movementEntity.tilePosition = Vector3Int.FloorToInt(entity.transform.position);
             movementEntity.tileEntity = entity;
-            movementEntity.ticksPerTile = 10;
-            movementEntity.ticksPerTurn = 20;
+            movementEntity.ticksPerTile = entity.ticksPerTile;
+            movementEntity.ticksPerTurn = entity.ticksPerTurn;
             movementEntities.Add(entity.id, movementEntity);
         }
 
@@ -180,16 +181,17 @@ namespace ARACore
                         // Clean up the forward check
                         forwardChecks.Remove(forwardCheck);
                         tileMoveRequests[targetTile] = move;
-                        Debug.Log("forward check");
+                        //Debug.Log("forward check");
                         return;
                     }
                 }
                 else
                 {
                     // There's something in front of us that isn't moving
-                    Debug.Log(targetTile + " blocked");
+                    //Debug.Log(targetTile + " blocked");
                     return;
                 }
+                return;
             }
             TileMove otherMove;
             if (tileMoveRequests.TryGetValue(targetTile, out otherMove))
@@ -242,7 +244,15 @@ namespace ARACore
                 MovementCheck forwardCheck;
                 forwardCheck.direction = request.Value.direction;
                 forwardCheck.tilePosition = request.Value.startingTile;
-                forwardChecks.Add(forwardCheck, tileMove.id);
+                try
+                {
+                    forwardChecks.Add(forwardCheck, tileMove.id);
+                }
+                catch
+                {
+                    Debug.Break();
+                    Debug.Log("Lel wat at " + forwardCheck.tilePosition + " and " + forwardCheck.direction);
+                }
             }
             tileMoveRequests.Clear();
 

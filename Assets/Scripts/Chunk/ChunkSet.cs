@@ -1,5 +1,4 @@
-﻿using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -37,7 +36,7 @@ namespace ARACore
 
         public bool IsAir(int gx, int gy, int gz)
         {
-            return GetBlockType(gz, gy, gz) == BlockType.Air;
+            return GetBlockType(gx, gy, gz) == BlockType.Air;
         }
 
         private Chunk GetChunk(int gx, int gy, int gz)

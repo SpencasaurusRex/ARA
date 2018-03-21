@@ -32,6 +32,11 @@ public class UnitTest {
         chunks.SetBlockType(45, -102, 10000, BlockType.Grass);
         b = chunks.GetBlockType(45, -102, 10000);
         Assert.AreEqual(BlockType.Grass, b);
+
+        chunks.SetBlockType(-1, -1, -1, BlockType.Robot);
+        b = chunks.GetBlockType(-1, -1, -1);
+        Assert.AreEqual(BlockType.Robot, b);
+
     }
 
     [Test]
