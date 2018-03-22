@@ -55,7 +55,7 @@ namespace ARACore
             public Quaternion targetRotation;
         }
 
-        private struct MovementCheck
+        public struct MovementCheck
         {
             public Direction direction;
             public Vector3Int tilePosition;
@@ -81,7 +81,7 @@ namespace ARACore
         Dictionary<Vector3Int, TileMove> tileMoveRequests;
         Dictionary<ulong, TileMove> awardedMoves;
         Dictionary<ulong, Turn> awardedTurns;
-        Dictionary<MovementCheck, ulong> forwardChecks;
+        public Dictionary<MovementCheck, ulong> forwardChecks;
 
         public MovementManager()
         {
@@ -152,6 +152,7 @@ namespace ARACore
             TileMove move = new TileMove();
             move.id = id;
             move.startingTile = movementEntity.tilePosition;
+            move.direction = direction;
             move.targetTile = targetTile;
 
             // Check for other movers
@@ -172,7 +173,7 @@ namespace ARACore
                     MovementEntity forwardEntity;
                     if (!movementEntities.TryGetValue(forwardId, out forwardEntity))
                     {
-                        throw new Exception("A forward move data object existed without a coreesponding movement entity");
+                        throw new Exception("A forward move data object existed without a corresponding movement entity");
                     }
                     int forwardTime = forwardEntity.ticksPerTile - forwardMove.progress;
                     if (forwardTime <= movementEntity.ticksPerTile)
@@ -181,14 +182,12 @@ namespace ARACore
                         // Clean up the forward check
                         forwardChecks.Remove(forwardCheck);
                         tileMoveRequests[targetTile] = move;
-                        //Debug.Log("forward check");
                         return;
                     }
                 }
                 else
                 {
                     // There's something in front of us that isn't moving
-                    //Debug.Log(targetTile + " blocked");
                     return;
                 }
                 return;
@@ -207,7 +206,7 @@ namespace ARACore
                     }
                     else
                     {
-                        Debug.Log("lost priority");
+                        // Lost priority
                         return;
                     }
                 }
@@ -220,7 +219,6 @@ namespace ARACore
                 else
                 {
                     // We're slower
-                    Debug.Log("too slow");
                     return;
                 }
             }
@@ -244,15 +242,10 @@ namespace ARACore
                 MovementCheck forwardCheck;
                 forwardCheck.direction = request.Value.direction;
                 forwardCheck.tilePosition = request.Value.startingTile;
-                try
-                {
-                    forwardChecks.Add(forwardCheck, tileMove.id);
-                }
-                catch
-                {
-                    Debug.Break();
-                    Debug.Log("Lel wat at " + forwardCheck.tilePosition + " and " + forwardCheck.direction);
-                }
+                forwardChecks.Add(forwardCheck, tileMove.id);
+
+                // Iterative back-checking
+                // TODO: We would have to store blocked moves
             }
             tileMoveRequests.Clear();
 

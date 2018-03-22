@@ -11,27 +11,6 @@ namespace ARACore
         public static ChunkSet world;
         public static ulong id;
 
-        void OnDrawGizmos()
-        {
-            for (int x = 0; x < 50; x++)
-            {
-                for (int y = 0; y < 50; y++)
-                {
-                    for (int z = 0; z < 50; z++)
-                    {
-                        if (world != null)
-                        {
-                            if (world.GetBlockType(x, y, z) == BlockType.Air)
-                            {
-                                continue;
-                            }
-                        }
-                        Gizmos.DrawCube(new Vector3(x, y, z), new Vector3(.5f, .5f, .5f));
-                    }
-                }
-            }
-        }
-
         private void Start()
         {
             #region Test setups
@@ -51,21 +30,21 @@ namespace ARACore
             //InstantiateTileEntity(TileEntity);
 
             // Random fill
-            for (int i = 0; i < 1000; i++)
-            {
-                TileEntity obj;
-                do
-                {
-                    int x = Random.Range(0, Chunk.CHUNK_SIZE_X * 2);
-                    int y = Random.Range(0, Chunk.CHUNK_SIZE_Y / 2);
-                    int z = Random.Range(0, Chunk.CHUNK_SIZE_Z * 2);
-                    obj = Instantiate(prefab);
-                    obj.transform.position = new Vector3(x, y, z);
-                    obj.ticksPerTile = Random.Range(10, 50);
-                    obj.ticksPerTurn = Random.Range(10, 50);
-                }
-                while (!RegisterWithSystems(obj));
-            }
+            //for (int i = 0; i < 1000; i++)
+            //{
+            //    TileEntity obj;
+            //    do
+            //    {
+            //        int x = Random.Range(0, Chunk.CHUNK_SIZE_X * 2);
+            //        int y = Random.Range(0, Chunk.CHUNK_SIZE_Y / 2);
+            //        int z = Random.Range(0, Chunk.CHUNK_SIZE_Z * 2);
+            //        obj = Instantiate(prefab);
+            //        obj.transform.position = new Vector3(x, y, z);
+            //        obj.ticksPerTile = Random.Range(10, 50);
+            //        obj.ticksPerTurn = Random.Range(10, 50);
+            //    }
+            //    while (!RegisterWithSystems(obj));
+            //}
 
             // Side-Collision checks
             //CreateAt(new Vector3(0, 0, 0), 1, 10);
@@ -109,7 +88,6 @@ namespace ARACore
             //}
 
             // Army
-            //TileEntity obj;
             //for (int i = 0; i < Chunk.CHUNK_SIZE_X; i++)
             //{
             //    CreateAt(new Vector3(i, 0, -2), 1, 3);
@@ -120,6 +98,18 @@ namespace ARACore
             //    CreateAt(new Vector3(i, 0, 3), 1, 20 + i * 2);
             //    CreateAt(new Vector3(i, 0, 4), 1, 25 + i * 3);
             //}
+
+            // Continuous army
+            for (int i = 0; i < Chunk.CHUNK_SIZE_X; i++)
+            {
+                CreateAt(new Vector3(i, 0, -2), 1);
+
+                CreateAt(new Vector3(i, 0, 0), 1);
+                CreateAt(new Vector3(i, 0, 1), 1);
+                CreateAt(new Vector3(i, 0, 2), 1);
+                CreateAt(new Vector3(i, 0, 3), 1);
+                CreateAt(new Vector3(i, 0, 4), 1);
+            }
 
             // Locked flower
             //CreateAt(new Vector3(0, 0, 0), 0, 5);
@@ -154,20 +144,49 @@ namespace ARACore
             movement.Tick();
             foreach (var robot in tileEntities)
             {
-                //movement.RequestMovement(robot.id, MovementAction.Forward);
+                movement.RequestMovement(robot.id, MovementAction.Forward);
 
-                var movementType = (MovementAction)Random.Range(0, 6);
+                //var movementType = (MovementAction)Random.Range(0, 6);
                 //if (movementType == MovementAction.Down) continue;
                 //if (movementType == MovementAction.Up) continue;
                 //if (movementType == MovementAction.TurnLeft) continue;
                 //if (movementType == MovementAction.TurnRight) continue;
                 //if (movementType == MovementAction.Forward) continue;
                 //if (movementType == MovementAction.Back) continue;
-                movement.RequestMovement(robot.id, movementType);
+                //movement.RequestMovement(robot.id, movementType);
             }
         }
 
-        private void CreateAt(Vector3 pos, int heading, int ticksPerTile = 50, int ticksPerTurn = 50)
+        private void OnDrawGizmos()
+        {
+            if (movement == null || movement.forwardChecks == null) return;
+            Gizmos.color = Color.white;
+            foreach (var forwardCheck in movement.forwardChecks)
+            {
+                var start = forwardCheck.Key.tilePosition;
+                var dir = Util.ToVector3Int(forwardCheck.Key.direction);
+                var end = start + dir;
+                Gizmos.DrawLine(start, end);
+                Gizmos.DrawCube(end, Vector3.one * 0.25f);
+            }
+            //if (world == null) return;
+            //Gizmos.color = Color.red;
+            //for (int x = 0; x < 50; x++)
+            //{
+            //    for (int y = 0; y < 50; y++)
+            //    {
+            //        for (int z = 0; z < 50; z++)
+            //        {
+            //            if (!world.IsAir(x, y, z))
+            //            {
+            //                Gizmos.DrawCube(new Vector3(x, y, z), Vector3.one * 0.25f);
+            //            }
+            //        }
+            //    }
+            //}
+        }
+
+        private bool CreateAt(Vector3 pos, int heading, int ticksPerTile = 50, int ticksPerTurn = 50)
         {
             TileEntity obj = Instantiate(prefab);
             obj.transform.position = pos;
@@ -175,7 +194,7 @@ namespace ARACore
             obj.startHeading = heading;
             obj.ticksPerTile = ticksPerTile;
             obj.ticksPerTurn = ticksPerTurn;
-            RegisterWithSystems(obj);
+            return RegisterWithSystems(obj);
         }
 
         // TODO Make this deterministic if two entities are being created onto the same tile

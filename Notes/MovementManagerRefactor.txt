@@ -43,7 +43,7 @@ Dictionary<ulong, MovementEntity> movementEntities
 
 // Added On   : MovementManager.RequestMove()
 // Updated On : MovementManager.RequestMove() overwrites with more qualified requests
-// Removed On : MovementManager.Tick() - Move Phase
+// Removed On : MovementManager.Tick() - Assignment Phase
 Dictionary<Vector3Int, TileMove> tileMoveRequests
 
 // Added On   : MovementManager.Tick() - Assignment Phase
