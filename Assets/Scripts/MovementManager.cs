@@ -82,6 +82,7 @@ namespace ARACore
         Dictionary<ulong, TileMove> awardedMoves;
         Dictionary<ulong, Turn> awardedTurns;
         public Dictionary<MovementCheck, ulong> forwardChecks;
+        public Dictionary<MovementCheck, ulong> blockedMoves;
 
         public MovementManager()
         {
@@ -90,6 +91,7 @@ namespace ARACore
             awardedMoves = new Dictionary<ulong, TileMove>();
             awardedTurns = new Dictionary<ulong, Turn>();
             forwardChecks = new Dictionary<MovementCheck, ulong>(new MovementCheckEqualityComparer());
+            blockedMoves = new Dictionary<MovementCheck, ulong>(new MovementCheckEqualityComparer());
         }
 
         public void RegisterTileEntity(TileEntity entity)
@@ -168,12 +170,12 @@ namespace ARACore
                     TileMove forwardMove;
                     if (!awardedMoves.TryGetValue(forwardId, out forwardMove))
                     {
-                        throw new Exception("A forward move data object existed without a corresponding awarded move");
+                        throw new Exception("A forward check data object existed without a corresponding awarded move");
                     }
                     MovementEntity forwardEntity;
                     if (!movementEntities.TryGetValue(forwardId, out forwardEntity))
                     {
-                        throw new Exception("A forward move data object existed without a corresponding movement entity");
+                        throw new Exception("A forward check data object existed without a corresponding movement entity");
                     }
                     int forwardTime = forwardEntity.ticksPerTile - forwardMove.progress;
                     if (forwardTime <= movementEntity.ticksPerTile)
@@ -188,6 +190,8 @@ namespace ARACore
                 else
                 {
                     // There's something in front of us that isn't moving
+                    // TODO: Think about using special BlockMove class
+                    blockedMoves.Add(forwardCheck, id);
                     return;
                 }
                 return;
@@ -238,15 +242,38 @@ namespace ARACore
                 awardedMoves.Add(request.Value.id, tileMove);
 
                 Manager.world.SetBlockType(request.Value.targetTile, BlockType.Robot);
-               
-                MovementCheck forwardCheck;
-                forwardCheck.direction = request.Value.direction;
-                forwardCheck.tilePosition = request.Value.startingTile;
-                forwardChecks.Add(forwardCheck, tileMove.id);
 
                 // Iterative back-checking
-                // TODO: We would have to store blocked moves
+                MovementCheck movementCheck;
+                movementCheck.direction = request.Value.direction;
+                movementCheck.tilePosition = request.Value.startingTile;
+                ulong currentId = request.Value.id;
+                Vector3Int dir = Util.ToVector3Int(movementCheck.direction);
+
+                // TODO: Figure out a better way todo back-iteration
+                do
+                {
+                    ulong lastId = currentId;
+                    if (blockedMoves.TryGetValue(movementCheck, out currentId) 
+                        && movementEntities[currentId].ticksPerTile >= movementEntities[lastId].ticksPerTile)
+                    {
+                        // Award the move
+                        TileMove move = new TileMove();
+                        move.id = currentId;
+                        move.targetTile = movementCheck.tilePosition;
+                        // Move the position down the chain
+                        move.startingTile = movementCheck.tilePosition -= dir;
+                        move.direction = movementCheck.direction;
+                        awardedMoves.Add(currentId, move);
+                    }
+                    else
+                    {
+                        forwardChecks.Add(movementCheck, lastId);
+                        break;
+                    }
+                } while (true);
             }
+            blockedMoves.Clear();
             tileMoveRequests.Clear();
 
             // Phase 3 - Movement

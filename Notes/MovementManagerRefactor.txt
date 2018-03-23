@@ -58,3 +58,8 @@ Dictionary<ulong, Turn> awardedTurns
 // Added On   : MovementManager.Tick() - Assignment Phase
 // Removed On : MovementManager.Tick() - Move Phase
 Dictionary<MovementCheck, ulong> forwardChecks
+
+// A move that was blocked by a block
+// Added On   : MovementManager.RequestMove
+// Removed On : MovementManager.Tick() - Assignment Phase
+Dictionary<MovementCheck, ulong> blockedMoves

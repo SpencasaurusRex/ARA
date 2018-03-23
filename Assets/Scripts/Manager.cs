@@ -169,6 +169,17 @@ namespace ARACore
                 Gizmos.DrawLine(start, end);
                 Gizmos.DrawCube(end, Vector3.one * 0.25f);
             }
+            Gizmos.color = Color.red;
+            foreach (var forwardCheck in movement.blockedMoves)
+            {
+                var start = forwardCheck.Key.tilePosition;
+                var dir = Util.ToVector3Int(forwardCheck.Key.direction);
+                var end = start;
+                start = start - dir;
+                Gizmos.DrawLine(start, end);
+                Gizmos.DrawCube(end, Vector3.one * 0.25f);
+            }
+
             //if (world == null) return;
             //Gizmos.color = Color.red;
             //for (int x = 0; x < 50; x++)
