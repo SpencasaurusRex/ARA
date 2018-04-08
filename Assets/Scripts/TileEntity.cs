@@ -6,14 +6,31 @@ namespace ARACore
 {
     public class TileEntity : MonoBehaviour
     {
-        public ulong id;
-        public int startHeading;
-        public int ticksPerTile = 50;
-        public int ticksPerTurn = 50;
+        public float DoubleClickDelay = .5f;
+        public ulong Id;
+        public int StartHeading;
+        public int TicksPerTile = 50;
+        public int TicksPerTurn = 50;
+
+        private float lastClick;
 
         private void Start()
         {
             
+        }
+
+        private void OnMouseDown()
+        {
+            if (Time.time - lastClick <= DoubleClickDelay)
+            {
+                // Double click
+                Camera.main.GetComponent<ThirdPersonCamera>().Focus(transform);
+            }
+            else
+            {
+                // Single click
+                lastClick = Time.time;
+            }
         }
     }
 }

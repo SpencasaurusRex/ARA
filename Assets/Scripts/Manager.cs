@@ -5,29 +5,28 @@ using UnityEngine;
 namespace ARACore
 {
     public class Manager : MonoBehaviour {
-        public TileEntity prefab;
+        public TileEntity robotPrefab;
+        public Material BlockMaterial;
+
         private List<TileEntity> tileEntities = new List<TileEntity>();
         public static MovementManager movement;
         public static ChunkSet world;
-        public static ulong id;
 
         private void Start()
         {
-            #region Test setups
-
+            Chunk.BlockMaterial = BlockMaterial;
             world = new ChunkSet();
-            for (int x = 0; x < Chunk.CHUNK_SIZE_X * 2; x++)
-            {
-                for (int z = 0; z < Chunk.CHUNK_SIZE_Z * 2; z++)
-                {
-                    world.SetBlockType(x, -1, z, BlockType.Grass);
-                }
-            }
-
             movement = new MovementManager();
 
-            // Single block
-            //InstantiateTileEntity(TileEntity);
+            #region Test setups
+            // Single block..
+            ulong id;
+            if (CreateAt(Vector3.zero, 1, out id, 100))
+            {
+                Camera.main.GetComponent<ThirdPersonCamera>().Focus(IdManager.Get(id).transform); 
+            }
+            // ..And his friend
+            CreateAt(Vector3.one, 0, out id, 10);
 
             // Random fill
             //for (int i = 0; i < 1000; i++)
@@ -88,28 +87,57 @@ namespace ARACore
             //}
 
             // Army
-            //for (int i = 0; i < Chunk.CHUNK_SIZE_X; i++)
+            //for (int i = 0; i < Chunk.CHUNK_SIZE_X * 2; i++)
             //{
             //    CreateAt(new Vector3(i, 0, -2), 1, 3);
 
-            //    CreateAt(new Vector3(i, 0, 0), 1, 5 + i * 2);
-            //    CreateAt(new Vector3(i, 0, 1), 1, 10 + i * 2);
-            //    CreateAt(new Vector3(i, 0, 2), 1, 15 + i * 2);
-            //    CreateAt(new Vector3(i, 0, 3), 1, 20 + i * 2);
-            //    CreateAt(new Vector3(i, 0, 4), 1, 25 + i * 3);
+            //    for (int j = 1; j < 20; j++)
+            //    {
+            //        CreateAt(new Vector3(i, 0, j - 1), 1, j + i + 20);
+            //    }
             //}
 
             // Continuous army
-            for (int i = 0; i < Chunk.CHUNK_SIZE_X; i++)
-            {
-                CreateAt(new Vector3(i, 0, -2), 1);
+            //for (int i = 0; i < Chunk.CHUNK_SIZE_X; i++)
+            //{
+            //    CreateAt(new Vector3(i, 0, -2), 1);
 
-                CreateAt(new Vector3(i, 0, 0), 1);
-                CreateAt(new Vector3(i, 0, 1), 1);
-                CreateAt(new Vector3(i, 0, 2), 1);
-                CreateAt(new Vector3(i, 0, 3), 1);
-                CreateAt(new Vector3(i, 0, 4), 1);
-            }
+            //    CreateAt(new Vector3(i, 0, 0), 1);
+            //    CreateAt(new Vector3(i, 0, 1), 1);
+            //    CreateAt(new Vector3(i, 0, 2), 1);
+            //    CreateAt(new Vector3(i, 0, 3), 1);
+            //    CreateAt(new Vector3(i, 0, 4), 1);
+            //}
+
+            // Clashing armies
+            //for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
+            //{
+            //    for (int z = 0; z < 5; z++)
+            //    {
+            //        CreateAt(new Vector3(x, 0, z), 1);
+            //    }
+            //}
+            //for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
+            //{
+            //    for (int z = 0; z < 5; z++)
+            //    {
+            //        CreateAt(new Vector3(x, 0, Chunk.CHUNK_SIZE_Z * 2 - z), 3);
+            //    }
+            //}
+            //for (int x = 0; x < 5; x++)
+            //{
+            //    for (int z = Chunk.CHUNK_SIZE_Z / 2; z < Chunk.CHUNK_SIZE_Z * 1.5f; z++)
+            //    {
+            //        CreateAt(new Vector3(x - 5, 0, z), 0, 60);
+            //    }
+            //}
+            //for (int x = 0; x < 5; x++)
+            //{
+            //    for (int z = Chunk.CHUNK_SIZE_Z / 2; z < Chunk.CHUNK_SIZE_Z * 1.5f; z++)
+            //    {
+            //        CreateAt(new Vector3(Chunk.CHUNK_SIZE_X - x + 5, 0, z), 2, 60 - x);
+            //    }
+            //}
 
             // Locked flower
             //CreateAt(new Vector3(0, 0, 0), 0, 5);
@@ -144,7 +172,7 @@ namespace ARACore
             movement.Tick();
             foreach (var robot in tileEntities)
             {
-                movement.RequestMovement(robot.id, MovementAction.Forward);
+                movement.RequestMovement(robot.Id, MovementAction.Forward);
 
                 //var movementType = (MovementAction)Random.Range(0, 6);
                 //if (movementType == MovementAction.Down) continue;
@@ -197,33 +225,33 @@ namespace ARACore
             //}
         }
 
-        private bool CreateAt(Vector3 pos, int heading, int ticksPerTile = 50, int ticksPerTurn = 50)
+        private bool CreateAt(Vector3 pos, int heading, out ulong id, int ticksPerTile = 50, int ticksPerTurn = 50)
         {
-            TileEntity obj = Instantiate(prefab);
+            TileEntity obj = Instantiate(robotPrefab);
             obj.transform.position = pos;
             obj.transform.rotation = Util.ToQuaternion(heading);
-            obj.startHeading = heading;
-            obj.ticksPerTile = ticksPerTile;
-            obj.ticksPerTurn = ticksPerTurn;
-            return RegisterWithSystems(obj);
+            obj.StartHeading = heading;
+            obj.TicksPerTile = ticksPerTile;
+            obj.TicksPerTurn = ticksPerTurn;
+            return RegisterWithSystems(obj, out id);
         }
 
         // TODO Make this deterministic if two entities are being created onto the same tile
-        private bool RegisterWithSystems(TileEntity entity)
+        private bool RegisterWithSystems(TileEntity entity, out ulong id)
         {
             // Set ID
-            entity.id = id++;
+            id = IdManager.Assign(entity.gameObject);
 
             // ChunkSet stuff
             Vector3Int tileLocation = Vector3Int.FloorToInt(entity.transform.position);
             if (world.IsAir(tileLocation))
             {
-                world.SetBlockType(tileLocation.x, tileLocation.y, tileLocation.z, BlockType.Robot);
+                world.CreateBlock(tileLocation.x, tileLocation.y, tileLocation.z, BlockType.Robot);
             }
             else
             {
-                id--;
                 Destroy(entity.gameObject);
+                IdManager.Unassign(id);
                 return false;
             }
 

@@ -24,9 +24,21 @@ namespace ARACore
         Down,
     }
 
+    public enum MovementResultType
+    {
+        Success,
+        Blocked,
+        OutOfFuel,
+    }
+
     public class MovementManager
     {
         #region Movement Related Types
+        public struct MovementResult
+        {
+            MovementResultType type;
+        }
+
         public struct MovementEntity
         {
             public TileEntity tileEntity;
@@ -77,6 +89,7 @@ namespace ARACore
         }
         #endregion
 
+        Dictionary<ulong, MovementResult> movementResult;
         Dictionary<ulong, MovementEntity> movementEntities;
         Dictionary<Vector3Int, TileMove> tileMoveRequests;
         Dictionary<ulong, TileMove> awardedMoves;
@@ -97,17 +110,17 @@ namespace ARACore
         public void RegisterTileEntity(TileEntity entity)
         {
             var movementEntity = new MovementEntity();
-            movementEntity.heading = entity.startHeading;
+            movementEntity.heading = entity.StartHeading;
             movementEntity.tilePosition = Vector3Int.FloorToInt(entity.transform.position);
             movementEntity.tileEntity = entity;
-            movementEntity.ticksPerTile = entity.ticksPerTile;
-            movementEntity.ticksPerTurn = entity.ticksPerTurn;
-            movementEntities.Add(entity.id, movementEntity);
+            movementEntity.ticksPerTile = entity.TicksPerTile;
+            movementEntity.ticksPerTurn = entity.TicksPerTurn;
+            movementEntities.Add(entity.Id, movementEntity);
         }
 
         public void DestroyTileEntity(TileEntity entity)
         {
-            movementEntities.Remove(entity.id);
+            movementEntities.Remove(entity.Id);
         }
 
         public void RequestMovement(ulong id, MovementAction action)
@@ -241,7 +254,7 @@ namespace ARACore
                 TileMove tileMove = request.Value;
                 awardedMoves.Add(request.Value.id, tileMove);
 
-                Manager.world.SetBlockType(request.Value.targetTile, BlockType.Robot);
+                Manager.world.CreateBlock(request.Value.targetTile, BlockType.Robot);
 
                 // Iterative back-checking
                 MovementCheck movementCheck;
@@ -292,7 +305,7 @@ namespace ARACore
                     if (forwardChecks.ContainsKey(check))
                     {
                         forwardChecks.Remove(check);
-                        Manager.world.SetBlockType(check.tilePosition, BlockType.Air);
+                        Manager.world.CreateBlock(check.tilePosition, BlockType.Air);
                     }
                     movementEntities.Remove(id);
                     entity.tilePosition = move.targetTile;

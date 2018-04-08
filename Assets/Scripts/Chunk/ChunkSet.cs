@@ -5,28 +5,69 @@ using System.Text;
 using UnityEngine;
 namespace ARACore
 {
-    public class ChunkSet
+    public class ChunkSet : MonoBehaviour
     {
-        Dictionary<ChunkCoords, Chunk> chunks;
-
-        public ChunkSet()
+        ulong currentBlockId;
+        public ulong CurrentBlockId
         {
-            chunks = new Dictionary<ChunkCoords, Chunk>();
+            get
+            {
+                return currentBlockId++;
+            }
         }
 
-        public void SetBlockType(Vector3Int gPosition, BlockType b)
+        Dictionary<ChunkCoords, Chunk> chunks = new Dictionary<ChunkCoords, Chunk>();
+
+        private void Start()
         {
-            GetChunk(gPosition.x, gPosition.y, gPosition.z).SetBlock(gPosition.x, gPosition.y, gPosition.z, b);
+
         }
 
-        public void SetBlockType(int gx, int gy, int gz, BlockType b)
+        private void Update()
         {
+            // TODO: Move mesh logic into a MeshManager
+            // TODO: Update active mesh renderers based on camera's position
+        }
+
+        public void GenerateChunk(ChunkCoords cc)
+        {
+            // Make sure the chunk doesn't already exist
+            if (chunks.ContainsKey(cc))
+            {
+                return;
+            }
+
+            Chunk chunk = new Chunk(this, cc);
+            chunks[cc] = chunk;
+        }
+
+        public void CreateBlock(int gx, int gy, int gz, BlockType type)
+        {
+            Block b;
+            // TODO only use this if the block needs other data components (ex: Update)
+            b.id = CurrentBlockId;
+            b.type = type;
             GetChunk(gx, gy, gz).SetBlock(gx, gy, gz, b);
+        }
+
+        public void CreateBlock(Vector3Int globalPosition, BlockType type)
+        {
+            CreateBlock(globalPosition.x, globalPosition.y, globalPosition.z, type);
+        }
+
+        public Block GetBlock(int gx, int gy, int gz)
+        {
+            return GetChunk(gx, gy, gz).GetBlock(gx, gy, gz);
+        }
+
+        public ulong GetBlockId(int gx, int gy, int gz)
+        {
+            return GetChunk(gx, gy, gz).GetBlock(gx, gy, gz).id;
         }
 
         public BlockType GetBlockType(int gx, int gy, int gz)
         {
-            return GetChunk(gx, gy, gz).GetBlock(gx, gy, gz);
+            return GetChunk(gx, gy, gz).GetBlock(gx, gy, gz).type;
         }
 
         public bool IsAir(Vector3Int gPosition)
@@ -49,7 +90,7 @@ namespace ARACore
             }
             else
             {
-                c = chunks[cc] = new Chunk();
+                c = chunks[cc] = new Chunk(this, cc);
             }
             return c;
         }

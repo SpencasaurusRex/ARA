@@ -7,9 +7,9 @@ namespace ARACore
 {
     public class ChunkCoords : IEquatable<ChunkCoords>
     {
-        public const int CHUNK_SHIFT_X = 5; // 2^5 = 32
-        public const int CHUNK_SHIFT_Y = 5;
-        public const int CHUNK_SHIFT_Z = 5; 
+        public const int CHUNK_SHIFT_X = 4; // 2^4 = 16
+        public const int CHUNK_SHIFT_Y = 4;
+        public const int CHUNK_SHIFT_Z = 4; 
 
         public Int64 cx;
         public Int64 cy;
@@ -39,7 +39,6 @@ namespace ARACore
 
         public override int GetHashCode()
         {
-            // TODO find a way to use a 64bit HashCode
             return (Expand(cx) + (Expand(cy) << 1) + (Expand(cz) << 2)).GetHashCode();
         }
 

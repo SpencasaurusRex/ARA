@@ -10,6 +10,7 @@ public class UnitTest {
     [Test]
     public void TestToDirection()
     {
+        Assert.AreEqual(Direction.North, Util.ToDirection(MovementAction.Forward, 1));
         for (int h = 0; h < 4; h++)
         {
             Assert.AreEqual((int)Util.ToDirection(MovementAction.Forward, h), h);
@@ -29,11 +30,11 @@ public class UnitTest {
         Assert.AreEqual(BlockType.Air, b);
 
         // Can set and get blocks
-        chunks.SetBlockType(45, -102, 10000, BlockType.Grass);
+        chunks.CreateBlock(45, -102, 10000, BlockType.Grass);
         b = chunks.GetBlockType(45, -102, 10000);
         Assert.AreEqual(BlockType.Grass, b);
 
-        chunks.SetBlockType(-1, -1, -1, BlockType.Robot);
+        chunks.CreateBlock(-1, -1, -1, BlockType.Robot);
         b = chunks.GetBlockType(-1, -1, -1);
         Assert.AreEqual(BlockType.Robot, b);
 
@@ -55,14 +56,13 @@ public class UnitTest {
 
         //MovementManager.RegisterTileEntity(new TileEntity(), new Vector3Int(0, 0, 0), 10, 10, 0); // Down
         //MovementManager.RegisterTileEntity(new TileEntity(), new Vector3Int(0, 1, 0), 10, 10, 0); // Up
-
     }
 
-	// A UnityTest behaves like a coroutine in PlayMode
-	// and allows you to yield null to skip a frame in EditMode
-	[UnityTest]
-	public IEnumerator UnitTestWithEnumeratorPasses() {
+    // A UnityTest behaves like a coroutine in PlayMode
+    // and allows you to yield null to skip a frame in EditMode
+    [UnityTest]
+    public IEnumerator UnitTestWithEnumeratorPasses() {
         // TODO test MovementManager
         yield return null;
-	}
+    }
 }

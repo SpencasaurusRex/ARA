@@ -31,7 +31,7 @@ namespace ARACore
                 case Direction.South: return Back;
                 case Direction.Up: return Vector3Int.up;
                 case Direction.Down: return Vector3Int.down;
-                default: throw new InvalidOperationException("What are you even doing mate?");
+                default: throw new ArgumentException("What are you even doing mate?");
             }
         }
 
