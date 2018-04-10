@@ -123,6 +123,11 @@ namespace ARACore
             movementEntities.Remove(entity.Id);
         }
 
+        public bool IsMoving(ulong id)
+        {
+            return awardedMoves.ContainsKey(id) || awardedTurns.ContainsKey(id);
+        }
+
         public void RequestMovement(ulong id, MovementAction action)
         {
             // Check if we're already moving

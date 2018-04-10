@@ -7,12 +7,18 @@ namespace ARACore
     public class Manager : MonoBehaviour {
         public TileEntity robotPrefab;
         public Material BlockMaterial;
-
-        private List<TileEntity> tileEntities = new List<TileEntity>();
         public static MovementManager movement;
         public static ChunkSet world;
 
-        private void Start()
+        ScriptManager scriptManager;
+        List<TileEntity> tileEntities = new List<TileEntity>();
+
+        void Awake()
+        {
+            scriptManager = GetComponent<ScriptManager>();    
+        }
+
+        void Start()
         {
             Chunk.BlockMaterial = BlockMaterial;
             world = new ChunkSet();
@@ -20,13 +26,33 @@ namespace ARACore
 
             #region Test setups
             // Single block..
-            ulong id;
-            if (CreateAt(Vector3.zero, 1, out id, 100))
+            //ulong id;
+            //if (CreateAt(Vector3.zero, 1, out id, 100))
+            //{
+            //    Camera.main.GetComponent<ThirdPersonCamera>().Focus(IdManager.Get(id).transform);
+            //}
+            //// ..And his friend
+            //CreateAt(Vector3.one, 0, out id, 10);
+
+            // Full fill
+            //for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
+            //{
+            //    for (int z = 0; z < Chunk.CHUNK_SIZE_Z; z++)
+            //    {
+            //        ulong id;
+            //        CreateAt(new Vector3(x, 0, z), 1, out id);
+            //    }
+            //}
+
+            // Lattice
+            for (int x = 0; x < Chunk.CHUNK_SIZE_X; x+=2)
             {
-                Camera.main.GetComponent<ThirdPersonCamera>().Focus(IdManager.Get(id).transform); 
+                for (int z = 0; z < Chunk.CHUNK_SIZE_Z; z+=2)
+                {
+                    ulong id;
+                    CreateAt(new Vector3(x, 0, z), 1, out id);
+                }
             }
-            // ..And his friend
-            CreateAt(Vector3.one, 0, out id, 10);
 
             // Random fill
             //for (int i = 0; i < 1000; i++)
@@ -87,13 +113,14 @@ namespace ARACore
             //}
 
             // Army
+            //ulong id;
             //for (int i = 0; i < Chunk.CHUNK_SIZE_X * 2; i++)
             //{
-            //    CreateAt(new Vector3(i, 0, -2), 1, 3);
+            //    CreateAt(new Vector3(i, 0, -2), 1, out id, 3);
 
             //    for (int j = 1; j < 20; j++)
             //    {
-            //        CreateAt(new Vector3(i, 0, j - 1), 1, j + i + 20);
+            //        CreateAt(new Vector3(i, 0, j - 1), 1, out id, j + i + 20);
             //    }
             //}
 
@@ -110,32 +137,33 @@ namespace ARACore
             //}
 
             // Clashing armies
+            //ulong id;
             //for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
             //{
             //    for (int z = 0; z < 5; z++)
             //    {
-            //        CreateAt(new Vector3(x, 0, z), 1);
+            //        CreateAt(new Vector3(x, 0, z), 1, out id);
             //    }
             //}
             //for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
             //{
             //    for (int z = 0; z < 5; z++)
             //    {
-            //        CreateAt(new Vector3(x, 0, Chunk.CHUNK_SIZE_Z * 2 - z), 3);
+            //        CreateAt(new Vector3(x, 0, Chunk.CHUNK_SIZE_Z * 2 - z), 3, out id);
             //    }
             //}
             //for (int x = 0; x < 5; x++)
             //{
             //    for (int z = Chunk.CHUNK_SIZE_Z / 2; z < Chunk.CHUNK_SIZE_Z * 1.5f; z++)
             //    {
-            //        CreateAt(new Vector3(x - 5, 0, z), 0, 60);
+            //        CreateAt(new Vector3(x - 5, 0, z), 0, out id, 60);
             //    }
             //}
             //for (int x = 0; x < 5; x++)
             //{
             //    for (int z = Chunk.CHUNK_SIZE_Z / 2; z < Chunk.CHUNK_SIZE_Z * 1.5f; z++)
             //    {
-            //        CreateAt(new Vector3(Chunk.CHUNK_SIZE_X - x + 5, 0, z), 2, 60 - x);
+            //        CreateAt(new Vector3(Chunk.CHUNK_SIZE_X - x + 5, 0, z), 2, out id, 60 - x);
             //    }
             //}
 
@@ -172,8 +200,16 @@ namespace ARACore
             movement.Tick();
             foreach (var robot in tileEntities)
             {
-                movement.RequestMovement(robot.Id, MovementAction.Forward);
-
+                if (!movement.IsMoving(robot.Id))
+                {
+                    int result = scriptManager.Run(robot.scriptId);
+                    Debug.Log(result);
+                    if (result < 0)
+                    {
+                        continue;
+                    }
+                    movement.RequestMovement(robot.Id, (MovementAction)result);
+                }
                 //var movementType = (MovementAction)Random.Range(0, 6);
                 //if (movementType == MovementAction.Down) continue;
                 //if (movementType == MovementAction.Up) continue;
@@ -257,6 +293,10 @@ namespace ARACore
 
             // Movement stuff
             movement.RegisterTileEntity(entity);
+
+            // TODO: Move script instantiation
+            ulong scriptId = scriptManager.CreateScript();
+            entity.scriptId = scriptId;
 
             tileEntities.Add(entity);
             return true;

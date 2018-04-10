@@ -11,6 +11,7 @@ namespace ARACore
         public int StartHeading;
         public int TicksPerTile = 50;
         public int TicksPerTurn = 50;
+        public ulong scriptId;
 
         private float lastClick;
 

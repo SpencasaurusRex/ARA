@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Line : ScriptableObject
+public class Line
 {
     public Line(float m, float b)
     {
