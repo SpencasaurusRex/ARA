@@ -403,3 +403,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+Assets/Plugins/
