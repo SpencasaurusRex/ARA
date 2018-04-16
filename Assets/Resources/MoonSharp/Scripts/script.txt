@@ -31,10 +31,7 @@ function turnRight()
 end
 
 function run()
-	while true do
-		for i = 1,4 do
-			forward()
-			turnRight()
-		end
-	end
+	--while true do
+		--forward()
+	--end
 end

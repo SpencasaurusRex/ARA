@@ -20,46 +20,58 @@ namespace ARACore
 
         public const int CHUNK_SIZE = CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z;
 
-        private Block[] blocks;
-        private Mesh mesh;
-        private ChunkCoords coords;
+        ChunkSet world;
+        Block[] blocks;
+        ChunkCoords coords;
+        ChunkMesh mesh;
 
         public Chunk(ChunkSet world, ChunkCoords cc)
         {
+            this.world = world;
             blocks = new Block[CHUNK_SIZE];
             coords = cc;
 
             // Generate world
-            if (cc.cy == -1)
+            if (cc.cy == 0)
             {
                 for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
                 {
                     for (int z = 0; z < Chunk.CHUNK_SIZE_Z; z++)
                     {
-                        Block block;
+                        Block block;// TODO can't we just generate an ID based on position?
                         block.id = world.CurrentBlockId;
                         block.type = BlockType.Grass;
-                        blocks[GetIndexFromLocal(x, CHUNK_SIZE_Y - 1, z)] = block;
+                        blocks[GetIndexFromLocal(x, 0, z)] = block;
                     }
                 }
             }
-            GenerateMesh();
         }
 
-        public Block GetBlock(int gx, int gy, int gz)
+        public void GenerateMesh()
+        {
+            mesh = GameObject.Instantiate<ChunkMesh>(world.chunkMeshPrefab);
+            mesh.transform.parent = world.transform;
+            mesh.coords = coords;
+            mesh.world = world;
+            mesh.GenerateMesh();
+        }
+
+        public Block GetBlock(Int64 gx, Int64 gy, Int64 gz)
         {
             return blocks[GetIndexFromGlobal(gx, gy, gz)];
         }
 
-        public void SetBlock(int gx, int gy, int gz, Block block)
+        public void SetBlock(Int64 gx, Int64 gy, Int64 gz, Block block)
         {
             blocks[GetIndexFromGlobal(gx, gy, gz)] = block;
-            GenerateMesh();
-        }
-
-        public Mesh GenerateMesh()
-        {
-            return null;
+            if (mesh == null)
+            {
+                GenerateMesh();
+            }
+            else
+            {
+                mesh.GenerateMesh();
+            }
         }
 
         private static int GetIndexFromLocal(int lx, int ly, int lz)
@@ -67,11 +79,11 @@ namespace ARACore
             return (lz << (ChunkCoords.CHUNK_SHIFT_Y + ChunkCoords.CHUNK_SHIFT_X)) + (ly << ChunkCoords.CHUNK_SHIFT_X) + lx;
         }
 
-        private static int GetIndexFromGlobal(int gx, int gy, int gz)
+        private static int GetIndexFromGlobal(Int64 gx, Int64 gy, Int64 gz)
         {
-            int lx = gx & CHUNK_MASK_X;
-            int ly = gy & CHUNK_MASK_Y;
-            int lz = gz & CHUNK_MASK_Z;
+            int lx = (int)(gx & CHUNK_MASK_X);
+            int ly = (int)(gy & CHUNK_MASK_Y);
+            int lz = (int)(gz & CHUNK_MASK_Z);
             // Index in the form of z,y,x
             return (lz << (ChunkCoords.CHUNK_SHIFT_Y + ChunkCoords.CHUNK_SHIFT_X)) + (ly << ChunkCoords.CHUNK_SHIFT_X) + lx;
         }

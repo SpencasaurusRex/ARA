@@ -67,7 +67,6 @@ public class ThirdPersonCamera : MonoBehaviour
         {
             refocusing = true;
             refocusSmoothTime = distance * RefocusSmoothTimePerDistance + RefocusSmoothTimeBase;
-            Debug.Log(refocusSmoothTime);
         }
         objectTarget = newTarget;
     }

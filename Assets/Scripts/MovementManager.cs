@@ -176,7 +176,7 @@ namespace ARACore
             move.targetTile = targetTile;
 
             // Check for other movers
-            if (!Manager.world.IsAir(targetTile))
+            if (!Manager.world.IsAir(targetTile.x, targetTile.y, targetTile.z))
             {
                 MovementCheck forwardCheck;
                 forwardCheck.tilePosition = targetTile;
@@ -259,7 +259,7 @@ namespace ARACore
                 TileMove tileMove = request.Value;
                 awardedMoves.Add(request.Value.id, tileMove);
 
-                Manager.world.CreateBlock(request.Value.targetTile, BlockType.Robot);
+                Manager.world.CreateBlock(request.Value.targetTile.x, request.Value.targetTile.y, request.Value.targetTile.z, BlockType.Robot);
 
                 // Iterative back-checking
                 MovementCheck movementCheck;
@@ -310,7 +310,7 @@ namespace ARACore
                     if (forwardChecks.ContainsKey(check))
                     {
                         forwardChecks.Remove(check);
-                        Manager.world.CreateBlock(check.tilePosition, BlockType.Air);
+                        Manager.world.CreateBlock(check.tilePosition.x, check.tilePosition.y, check.tilePosition.z, BlockType.Air);
                     }
                     movementEntities.Remove(id);
                     entity.tilePosition = move.targetTile;

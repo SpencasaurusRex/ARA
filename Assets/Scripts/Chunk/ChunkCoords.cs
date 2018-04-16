@@ -9,7 +9,7 @@ namespace ARACore
     {
         public const int CHUNK_SHIFT_X = 4; // 2^4 = 16
         public const int CHUNK_SHIFT_Y = 4;
-        public const int CHUNK_SHIFT_Z = 4; 
+        public const int CHUNK_SHIFT_Z = 4;
 
         public Int64 cx;
         public Int64 cy;

@@ -21,17 +21,17 @@ namespace ARACore
         void Start()
         {
             Chunk.BlockMaterial = BlockMaterial;
-            world = new ChunkSet();
+            world = GetComponent<ChunkSet>();
             movement = new MovementManager();
 
             #region Test setups
             // Single block..
-            //ulong id;
-            //if (CreateAt(Vector3.zero, 1, out id, 100))
-            //{
-            //    Camera.main.GetComponent<ThirdPersonCamera>().Focus(IdManager.Get(id).transform);
-            //}
-            //// ..And his friend
+            ulong id;
+            if (CreateAt(Vector3.up, 1, out id, 30, 30))
+            {
+                Camera.main.GetComponent<ThirdPersonCamera>().Focus(IdManager.Get(id).transform);
+            }
+            // ..And his friend
             //CreateAt(Vector3.one, 0, out id, 10);
 
             // Full fill
@@ -45,14 +45,14 @@ namespace ARACore
             //}
 
             // Lattice
-            for (int x = 0; x < Chunk.CHUNK_SIZE_X; x+=2)
-            {
-                for (int z = 0; z < Chunk.CHUNK_SIZE_Z; z+=2)
-                {
-                    ulong id;
-                    CreateAt(new Vector3(x, 0, z), 1, out id);
-                }
-            }
+            //for (int x = 0; x < Chunk.CHUNK_SIZE_X; x+=2)
+            //{
+            //    for (int z = 0; z < Chunk.CHUNK_SIZE_Z; z+=2)
+            //    {
+            //        ulong id;
+            //        CreateAt(new Vector3(x, 0, z), 1, out id);
+            //    }
+            //}
 
             // Random fill
             //for (int i = 0; i < 1000; i++)
@@ -203,21 +203,12 @@ namespace ARACore
                 if (!movement.IsMoving(robot.Id))
                 {
                     int result = scriptManager.Run(robot.scriptId);
-                    Debug.Log(result);
                     if (result < 0)
                     {
                         continue;
                     }
                     movement.RequestMovement(robot.Id, (MovementAction)result);
                 }
-                //var movementType = (MovementAction)Random.Range(0, 6);
-                //if (movementType == MovementAction.Down) continue;
-                //if (movementType == MovementAction.Up) continue;
-                //if (movementType == MovementAction.TurnLeft) continue;
-                //if (movementType == MovementAction.TurnRight) continue;
-                //if (movementType == MovementAction.Forward) continue;
-                //if (movementType == MovementAction.Back) continue;
-                //movement.RequestMovement(robot.id, movementType);
             }
         }
 
@@ -243,22 +234,6 @@ namespace ARACore
                 Gizmos.DrawLine(start, end);
                 Gizmos.DrawCube(end, Vector3.one * 0.25f);
             }
-
-            //if (world == null) return;
-            //Gizmos.color = Color.red;
-            //for (int x = 0; x < 50; x++)
-            //{
-            //    for (int y = 0; y < 50; y++)
-            //    {
-            //        for (int z = 0; z < 50; z++)
-            //        {
-            //            if (!world.IsAir(x, y, z))
-            //            {
-            //                Gizmos.DrawCube(new Vector3(x, y, z), Vector3.one * 0.25f);
-            //            }
-            //        }
-            //    }
-            //}
         }
 
         private bool CreateAt(Vector3 pos, int heading, out ulong id, int ticksPerTile = 50, int ticksPerTurn = 50)
@@ -280,7 +255,7 @@ namespace ARACore
 
             // ChunkSet stuff
             Vector3Int tileLocation = Vector3Int.FloorToInt(entity.transform.position);
-            if (world.IsAir(tileLocation))
+            if (world.IsAir(tileLocation.x, tileLocation.y, tileLocation.z))
             {
                 world.CreateBlock(tileLocation.x, tileLocation.y, tileLocation.z, BlockType.Robot);
             }

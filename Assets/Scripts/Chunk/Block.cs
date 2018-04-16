@@ -1,4 +1,5 @@
 ﻿using ARACore;
+using UnityEngine;
 
 namespace ARACore
 {
@@ -6,5 +7,6 @@ namespace ARACore
     {
         public ulong id;
         public BlockType type;
+        // public Vector3 position;
     }
 }

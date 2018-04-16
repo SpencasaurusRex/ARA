@@ -7,6 +7,8 @@ namespace ARACore
 {
     public class ChunkSet : MonoBehaviour
     {
+        public ChunkMesh chunkMeshPrefab;
+
         ulong currentBlockId;
         public ulong CurrentBlockId
         {
@@ -18,9 +20,9 @@ namespace ARACore
 
         Dictionary<ChunkCoords, Chunk> chunks = new Dictionary<ChunkCoords, Chunk>();
 
-        private void Start()
+        void Awake()
         {
-
+            GenerateChunk(new ChunkCoords(0, -1, 0));    
         }
 
         private void Update()
@@ -39,6 +41,7 @@ namespace ARACore
 
             Chunk chunk = new Chunk(this, cc);
             chunks[cc] = chunk;
+            chunk.GenerateMesh();
         }
 
         public void CreateBlock(int gx, int gy, int gz, BlockType type)
@@ -50,37 +53,27 @@ namespace ARACore
             GetChunk(gx, gy, gz).SetBlock(gx, gy, gz, b);
         }
 
-        public void CreateBlock(Vector3Int globalPosition, BlockType type)
-        {
-            CreateBlock(globalPosition.x, globalPosition.y, globalPosition.z, type);
-        }
-
-        public Block GetBlock(int gx, int gy, int gz)
+        public Block GetBlock(Int64 gx, Int64 gy, Int64 gz)
         {
             return GetChunk(gx, gy, gz).GetBlock(gx, gy, gz);
         }
 
-        public ulong GetBlockId(int gx, int gy, int gz)
+        public ulong GetBlockId(Int64 gx, Int64 gy, Int64 gz)
         {
             return GetChunk(gx, gy, gz).GetBlock(gx, gy, gz).id;
         }
 
-        public BlockType GetBlockType(int gx, int gy, int gz)
+        public BlockType GetBlockType(Int64 gx, Int64 gy, Int64 gz)
         {
             return GetChunk(gx, gy, gz).GetBlock(gx, gy, gz).type;
         }
 
-        public bool IsAir(Vector3Int gPosition)
-        {
-            return GetBlockType(gPosition.x, gPosition.y, gPosition.z) == BlockType.Air;
-        }
-
-        public bool IsAir(int gx, int gy, int gz)
+        public bool IsAir(Int64 gx, Int64 gy, Int64 gz)
         {
             return GetBlockType(gx, gy, gz) == BlockType.Air;
         }
 
-        private Chunk GetChunk(int gx, int gy, int gz)
+        private Chunk GetChunk(Int64 gx, Int64 gy, Int64 gz)
         {
             ChunkCoords cc = ChunkCoords.FromBlockCoords(gx, gy, gz);
             Chunk c;
@@ -91,6 +84,11 @@ namespace ARACore
             else
             {
                 c = chunks[cc] = new Chunk(this, cc);
+                // This would cause infinite loop because newly generated chunks check their edges
+                if (Math.Abs(cc.cx) < 10 && Math.Abs(cc.cz) < 10)
+                {
+                    c.GenerateMesh();
+                }
             }
             return c;
         }
