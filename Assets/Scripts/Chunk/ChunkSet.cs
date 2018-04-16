@@ -22,7 +22,13 @@ namespace ARACore
 
         void Awake()
         {
-            GenerateChunk(new ChunkCoords(0, -1, 0));    
+            for (int x = -2; x <= 2; x++)
+            {
+                for (int z = -2; z <= 2; z++)
+                {
+                    GenerateChunk(new ChunkCoords(x, -1, z));    
+                }
+            }
         }
 
         private void Update()
@@ -34,13 +40,12 @@ namespace ARACore
         public void GenerateChunk(ChunkCoords cc)
         {
             // Make sure the chunk doesn't already exist
-            if (chunks.ContainsKey(cc))
+            Chunk chunk;
+            if (!chunks.TryGetValue(cc, out chunk))
             {
-                return;
+                chunk = new Chunk(this, cc);
+                chunks[cc] = chunk;
             }
-
-            Chunk chunk = new Chunk(this, cc);
-            chunks[cc] = chunk;
             chunk.GenerateMesh();
         }
 
@@ -84,11 +89,6 @@ namespace ARACore
             else
             {
                 c = chunks[cc] = new Chunk(this, cc);
-                // This would cause infinite loop because newly generated chunks check their edges
-                if (Math.Abs(cc.cx) < 10 && Math.Abs(cc.cz) < 10)
-                {
-                    c.GenerateMesh();
-                }
             }
             return c;
         }

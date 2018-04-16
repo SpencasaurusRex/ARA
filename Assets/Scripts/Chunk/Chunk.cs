@@ -32,7 +32,7 @@ namespace ARACore
             coords = cc;
 
             // Generate world
-            if (cc.cy == 0)
+            if (cc.cy == -1 && Math.Abs(cc.cx) <= 2 && Math.Abs(cc.cz) <= 2)
             {
                 for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
                 {
@@ -41,7 +41,9 @@ namespace ARACore
                         Block block;// TODO can't we just generate an ID based on position?
                         block.id = world.CurrentBlockId;
                         block.type = BlockType.Grass;
-                        blocks[GetIndexFromLocal(x, 0, z)] = block;
+                        long gx = cc.cx * Chunk.CHUNK_SIZE_X + x;
+                        long gz = cc.cz * Chunk.CHUNK_SIZE_Z + z;
+                        blocks[GetIndexFromLocal(x, 10 + Mathf.RoundToInt(Mathf.PerlinNoise(gx * .1f, gz * .1f) * 5), z)] = block;
                     }
                 }
             }
@@ -49,10 +51,14 @@ namespace ARACore
 
         public void GenerateMesh()
         {
-            mesh = GameObject.Instantiate<ChunkMesh>(world.chunkMeshPrefab);
-            mesh.transform.parent = world.transform;
-            mesh.coords = coords;
-            mesh.world = world;
+            if (mesh == null)
+            {
+                mesh = GameObject.Instantiate<ChunkMesh>(world.chunkMeshPrefab);
+                mesh.name = "ChunkMesh" + coords.cx + "," + coords.cy + "," + coords.cz;
+                mesh.transform.parent = world.transform;
+                mesh.coords = coords;
+                mesh.world = world;
+            }
             mesh.GenerateMesh();
         }
 
@@ -64,14 +70,7 @@ namespace ARACore
         public void SetBlock(Int64 gx, Int64 gy, Int64 gz, Block block)
         {
             blocks[GetIndexFromGlobal(gx, gy, gz)] = block;
-            if (mesh == null)
-            {
-                GenerateMesh();
-            }
-            else
-            {
-                mesh.GenerateMesh();
-            }
+            GenerateMesh();
         }
 
         private static int GetIndexFromLocal(int lx, int ly, int lz)

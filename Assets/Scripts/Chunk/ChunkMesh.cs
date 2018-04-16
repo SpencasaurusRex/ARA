@@ -7,11 +7,6 @@ namespace ARACore
 {
     public class ChunkMesh : MonoBehaviour
     {
-
-        public Material material;
-        public ChunkCoords coords;
-        public ChunkSet world;
-
         static Vector2[,] blockUVs;
         static ChunkMesh()
         {
@@ -34,6 +29,15 @@ namespace ARACore
                 blockUVs[blockType, 3] = new Vector2((x + 1) / CANVAS_SIZE, (y + 1) / CANVAS_SIZE);
             }
         }
+
+
+        public Material material;
+        public ChunkCoords coords;
+        public ChunkSet world;
+        MeshFilter meshFilter;
+        MeshRenderer meshRenderer;
+        List<Mesh> preMeshes = new List<Mesh>();
+        List<Vector3> preLocations = new List<Vector3>();
 
         public void GenerateMesh()
         {
@@ -76,11 +80,6 @@ namespace ARACore
             Vector3[] vertices = new Vector3[4];
             Vector3[] normals = new Vector3[4];
 
-            Vector2 uv00 = blockUVs[blockType, 0];
-            Vector2 uv10 = blockUVs[blockType, 1];
-            Vector2 uv01 = blockUVs[blockType, 2];
-            Vector2 uv11 = blockUVs[blockType, 3];
-
             //all possible vertices 
             Vector3 p0 = new Vector3(-0.5f, -0.5f, 0.5f);
             Vector3 p1 = new Vector3(0.5f, -0.5f, 0.5f);
@@ -90,6 +89,11 @@ namespace ARACore
             Vector3 p5 = new Vector3(0.5f, 0.5f, 0.5f);
             Vector3 p6 = new Vector3(0.5f, 0.5f, -0.5f);
             Vector3 p7 = new Vector3(-0.5f, 0.5f, -0.5f);
+
+            Vector2 uv00 = blockUVs[blockType, 0];
+            Vector2 uv10 = blockUVs[blockType, 1];
+            Vector2 uv01 = blockUVs[blockType, 2];
+            Vector2 uv11 = blockUVs[blockType, 3];
 
             switch (side)
             {
@@ -127,36 +131,41 @@ namespace ARACore
 
             mesh.vertices = vertices;
             mesh.normals = normals;
-            mesh.uv = new Vector2[] { uv11, uv01, uv00, uv10 };
             mesh.triangles = new int[] { 3, 1, 0, 3, 2, 1 };
+            mesh.uv = new Vector2[] { uv11, uv01, uv00, uv10 };
 
             mesh.RecalculateBounds();
 
-            // TODO: optimize to not create new GameObject, Just store mesh and transform
-            GameObject quad = new GameObject("Quad");
-            quad.transform.position = pos;
-            quad.transform.parent = transform;
+            //quad.transform.position = pos;
+            //quad.transform.parent = transform;
 
-            MeshFilter meshFilter = quad.AddComponent<MeshFilter>();
-            meshFilter.mesh = mesh;
+            preLocations.Add(pos);
+            preMeshes.Add(mesh);
         }
 
         void CombineQuads()
         {
-            var meshFilters = GetComponentsInChildren<MeshFilter>();
-            CombineInstance[] combine = new CombineInstance[meshFilters.Length];
-            for (int i = 0; i < meshFilters.Length; i++)
+            CombineInstance[] combine = new CombineInstance[preMeshes.Count];
+            for (int i = 0; i < preMeshes.Count; i++)
             {
-                combine[i].mesh = meshFilters[i].mesh;
-                combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
+                combine[i].mesh = preMeshes[i];
+                combine[i].transform = Matrix4x4.TRS(transform.position + preLocations[i], Quaternion.identity, Vector3.one);
             }
+            preMeshes.Clear();
+            preLocations.Clear();
 
-            var meshFilter = gameObject.AddComponent<MeshFilter>();
+            if (meshFilter == null)
+            {
+                meshFilter = gameObject.AddComponent<MeshFilter>();
+            }
             meshFilter.mesh = new Mesh();
             meshFilter.mesh.CombineMeshes(combine);
 
-            MeshRenderer renderer = gameObject.AddComponent<MeshRenderer>();
-            renderer.material = material;
+            if (meshRenderer == null)
+            {
+                meshRenderer = gameObject.AddComponent<MeshRenderer>();
+                meshRenderer.material = material;
+            }
 
             // TODO: Remove this part when we optimize to not create gameObjects
             foreach (Transform quad in transform)

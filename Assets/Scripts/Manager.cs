@@ -27,7 +27,7 @@ namespace ARACore
             #region Test setups
             // Single block..
             ulong id;
-            if (CreateAt(Vector3.up, 1, out id, 30, 30))
+            if (CreateAt(Vector3.zero, 1, out id, 30, 30))
             {
                 Camera.main.GetComponent<ThirdPersonCamera>().Focus(IdManager.Get(id).transform);
             }
