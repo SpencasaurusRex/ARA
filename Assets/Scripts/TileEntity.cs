@@ -13,14 +13,9 @@ namespace ARACore
         public int TicksPerTurn = 50;
         public ulong scriptId;
 
-        private float lastClick;
+        float lastClick;
 
-        private void Start()
-        {
-            
-        }
-
-        private void OnMouseDown()
+        void OnMouseDown()
         {
             if (Time.time - lastClick <= DoubleClickDelay)
             {
@@ -32,6 +27,12 @@ namespace ARACore
                 // Single click
                 lastClick = Time.time;
             }
+        }
+
+        private void OnDestroy()
+        {
+            Manager.robotManager.Unassign(Id);
+            Manager.movement.DestroyTileEntity(this);
         }
     }
 }

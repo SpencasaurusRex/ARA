@@ -1,0 +1,44 @@
+-- MovementAction order
+-- Forward,
+-- Up,
+-- Back,
+-- Down,
+-- TurnLeft,
+-- TurnRight
+
+function forward()
+	coroutine.yield(0)
+end
+
+function up()
+	coroutine.yield(1)
+end
+
+function back()
+	coroutine.yield(2)
+end
+
+function down()
+	coroutine.yield(3)
+end
+
+function turnLeft()
+	coroutine.yield(4)
+end
+
+function turnRight()
+	coroutine.yield(5)
+end
+
+function run()
+	while true do
+		turnRight()
+		turnRight()
+		back()
+		turnRight()
+		turnRight()
+		up()
+		down()
+		turnRight()
+	end
+end

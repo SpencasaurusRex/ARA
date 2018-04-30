@@ -7,73 +7,66 @@ namespace ARACore
 {
     public class ChunkMesh : MonoBehaviour
     {
-        static Vector2[,] blockUVs;
-        static ChunkMesh()
-        {
-            const int BLOCKS = 2;
-            // How many blocks on one size
-            const int CANVAS_SIZE = 8;
-
-            blockUVs = new Vector2[BLOCKS, 4];
-
-            // TODO: Do fancy stuff where instead of blockType as index, use a translator
-            // From (blockType,side) -> index. So that if some sides of the block are the same,
-            // We don't use different UVs. This approach will also help use negative numbers for blockTypes
-            for (int blockType = 0; blockType < BLOCKS; blockType++)
-            {
-                float x = blockType % CANVAS_SIZE;
-                float y = blockType / CANVAS_SIZE;
-                blockUVs[blockType, 0] = new Vector2((x + 0) / CANVAS_SIZE, (y + 0) / CANVAS_SIZE);
-                blockUVs[blockType, 1] = new Vector2((x + 1) / CANVAS_SIZE, (y + 0) / CANVAS_SIZE);
-                blockUVs[blockType, 2] = new Vector2((x + 0) / CANVAS_SIZE, (y + 1) / CANVAS_SIZE);
-                blockUVs[blockType, 3] = new Vector2((x + 1) / CANVAS_SIZE, (y + 1) / CANVAS_SIZE);
-            }
-        }
-
-
         public Material material;
         public ChunkCoords coords;
         public ChunkSet world;
         MeshFilter meshFilter;
         MeshRenderer meshRenderer;
+        MeshCollider meshCollider;
         List<Mesh> preMeshes = new List<Mesh>();
         List<Vector3> preLocations = new List<Vector3>();
+        bool markedForRegeneration;
+
+        void Awake()
+        {
+            meshCollider = GetComponent<MeshCollider>();
+        }
+
+        public void LateUpdate()
+        {
+            if (markedForRegeneration)
+            {
+                Int64 baseX = coords.cx * Chunk.CHUNK_SIZE_X;
+                Int64 baseY = coords.cy * Chunk.CHUNK_SIZE_Y;
+                Int64 baseZ = coords.cz * Chunk.CHUNK_SIZE_Z;
+
+                for (Int64 z = baseZ; z < baseZ + Chunk.CHUNK_SIZE_Z; z++)
+                {
+                    for (Int64 y = baseY; y < baseY + Chunk.CHUNK_SIZE_Y; y++)
+                    {
+                        for (Int64 x = baseX; x < baseX + Chunk.CHUNK_SIZE_X; x++)
+                        {
+                            BlockType type = world.GetBlockType(x, y, z);
+                            if (!BlockProperties.Get(type).generateMesh) continue;
+
+                            Vector3 position = new Vector3(x, y, z);
+                            // TODO: Check for blocks across chunks, but only if the chunk is rendered!
+                            if (BlockProperties.Get(world.GetBlockType(x + 1, y + 0, z + 0)).transparent) CreateQuad(position, type, BlockSide.East);
+                            if (BlockProperties.Get(world.GetBlockType(x + 0, y + 0, z + 1)).transparent) CreateQuad(position, type, BlockSide.North);
+                            if (BlockProperties.Get(world.GetBlockType(x - 1, y + 0, z + 0)).transparent) CreateQuad(position, type, BlockSide.West);
+                            if (BlockProperties.Get(world.GetBlockType(x + 0, y + 0, z - 1)).transparent) CreateQuad(position, type, BlockSide.South);
+                            if (BlockProperties.Get(world.GetBlockType(x + 0, y + 1, z + 0)).transparent) CreateQuad(position, type, BlockSide.Top);
+                            if (BlockProperties.Get(world.GetBlockType(x + 0, y - 1, z + 0)).transparent) CreateQuad(position, type, BlockSide.Bottom);
+                        }
+                    }
+                }
+
+                CombineQuads();
+                meshCollider.sharedMesh = meshFilter.sharedMesh;
+                markedForRegeneration = false;
+            }
+        }
 
         public void GenerateMesh()
         {
-            Int64 baseX = coords.cx * Chunk.CHUNK_SIZE_X; 
-            Int64 baseY = coords.cy * Chunk.CHUNK_SIZE_Y; 
-            Int64 baseZ = coords.cz * Chunk.CHUNK_SIZE_Z;
-
-            for (Int64 z = baseZ; z < baseZ + Chunk.CHUNK_SIZE_Z; z++)
-            {
-                for (Int64 y = baseY; y < baseY + Chunk.CHUNK_SIZE_Y; y++)
-                {
-                    for (Int64 x = baseX; x < baseX + Chunk.CHUNK_SIZE_X; x++)
-                    {
-                        BlockType type = world.GetBlockType(x, y, z);
-                        if (type == BlockType.Air || type == BlockType.Robot) continue;
-                        Vector3 position = new Vector3(x, y, z);
-                        // TODO: Check for blocks across chunks, but only if the chunk is rendered!
-                        if (world.GetBlockType(x + 1, y + 0, z + 0) <= 0) CreateQuad(position, Cubeside.EAST);
-                        if (world.GetBlockType(x + 0, y + 0, z + 1) <= 0) CreateQuad(position, Cubeside.NORTH);
-                        if (world.GetBlockType(x - 1, y + 0, z + 0) <= 0) CreateQuad(position, Cubeside.WEST);
-                        if (world.GetBlockType(x + 0, y + 0, z - 1) <= 0) CreateQuad(position, Cubeside.SOUTH);
-                        if (world.GetBlockType(x + 0, y + 1, z + 0) <= 0) CreateQuad(position, Cubeside.UP);
-                        if (world.GetBlockType(x + 0, y - 1, z + 0) <= 0) CreateQuad(position, Cubeside.DOWN);
-                    }
-                }
-            }
-
-            CombineQuads();
+            markedForRegeneration = true;
         }
 
-        enum Cubeside { DOWN, UP, EAST, NORTH, WEST, SOUTH };
-
-        void CreateQuad(Vector3 pos, Cubeside side)
+        void CreateQuad(Vector3 pos, BlockType type, BlockSide side)
         {
-            const int blockType = (int)BlockType.Grass;
-
+            int uvTileIndex = BlockProperties.Get(type).uvTileIndex[(int)side];
+            Vector2[] uvs = BlockProperties.GetUVs(uvTileIndex);
+            
             Mesh mesh = new Mesh();
             mesh.name = "Quad" + side.ToString();
 
@@ -90,39 +83,34 @@ namespace ARACore
             Vector3 p6 = new Vector3(0.5f, 0.5f, -0.5f);
             Vector3 p7 = new Vector3(-0.5f, 0.5f, -0.5f);
 
-            Vector2 uv00 = blockUVs[blockType, 0];
-            Vector2 uv10 = blockUVs[blockType, 1];
-            Vector2 uv01 = blockUVs[blockType, 2];
-            Vector2 uv11 = blockUVs[blockType, 3];
-
             switch (side)
             {
-                case Cubeside.DOWN:
+                case BlockSide.Bottom:
                     vertices = new Vector3[] { p0, p1, p2, p3 };
                     normals = new Vector3[] {Vector3.down, Vector3.down,
                                             Vector3.down, Vector3.down};
                     break;
-                case Cubeside.UP:
+                case BlockSide.Top:
                     vertices = new Vector3[] { p7, p6, p5, p4 };
                     normals = new Vector3[] {Vector3.up, Vector3.up,
                                             Vector3.up, Vector3.up};
                     break;
-                case Cubeside.WEST:
+                case BlockSide.West:
                     vertices = new Vector3[] { p7, p4, p0, p3 };
                     normals = new Vector3[] {Vector3.left, Vector3.left,
                                             Vector3.left, Vector3.left};
                     break;
-                case Cubeside.EAST:
+                case BlockSide.East:
                     vertices = new Vector3[] { p5, p6, p2, p1 };
                     normals = new Vector3[] {Vector3.right, Vector3.right,
                                             Vector3.right, Vector3.right};
                     break;
-                case Cubeside.NORTH:
+                case BlockSide.North:
                     vertices = new Vector3[] { p4, p5, p1, p0 };
                     normals = new Vector3[] {Vector3.forward, Vector3.forward,
                                             Vector3.forward, Vector3.forward};
                     break;
-                case Cubeside.SOUTH:
+                case BlockSide.South:
                     vertices = new Vector3[] { p6, p7, p3, p2 };
                     normals = new Vector3[] {Vector3.back, Vector3.back,
                                             Vector3.back, Vector3.back};
@@ -132,12 +120,9 @@ namespace ARACore
             mesh.vertices = vertices;
             mesh.normals = normals;
             mesh.triangles = new int[] { 3, 1, 0, 3, 2, 1 };
-            mesh.uv = new Vector2[] { uv11, uv01, uv00, uv10 };
+            mesh.uv = uvs;
 
             mesh.RecalculateBounds();
-
-            //quad.transform.position = pos;
-            //quad.transform.parent = transform;
 
             preLocations.Add(pos);
             preMeshes.Add(mesh);
@@ -165,12 +150,6 @@ namespace ARACore
             {
                 meshRenderer = gameObject.AddComponent<MeshRenderer>();
                 meshRenderer.material = material;
-            }
-
-            // TODO: Remove this part when we optimize to not create gameObjects
-            foreach (Transform quad in transform)
-            {
-                Destroy(quad.gameObject);
             }
         }
     }

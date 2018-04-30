@@ -1,0 +1,37 @@
+﻿{
+    "air": {
+        "transparent": true,
+        "generateMesh": false
+    },
+    "grass": {
+      "transparent": false,
+      "generateMesh": true,
+      "top": {
+        "fileLocation": "grass_top.png"
+      },
+      "sides": {
+        "fileLocation": "grass_side.png"
+      },
+      "bottom": {
+        "fileLocation": "dirt.png"
+      }
+    },
+    "dirt": {
+      "transparent": false,
+      "generateMesh": true,
+      "all": {
+        "fileLocation": "dirt.png"
+      }
+    },
+    "robot": {
+        "transparent": true,
+        "generateMesh": false
+    },
+    "glass": {
+        "transparent": true,
+        "generateMesh": true,
+        "all": {
+            "fileLocation": "glass.png"
+        }
+    }
+}

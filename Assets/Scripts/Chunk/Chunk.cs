@@ -32,18 +32,26 @@ namespace ARACore
             coords = cc;
 
             // Generate world
-            if (cc.cy == -1 && Math.Abs(cc.cx) <= 2 && Math.Abs(cc.cz) <= 2)
+            if (cc.cy == -1 && Math.Abs(cc.cx) <= 5 && Math.Abs(cc.cz) <= 5)
             {
                 for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
                 {
                     for (int z = 0; z < Chunk.CHUNK_SIZE_Z; z++)
                     {
+                        long gx = cc.cx * Chunk.CHUNK_SIZE_X + x;
+                        long gz = cc.cz * Chunk.CHUNK_SIZE_Z + z;
+                        int groundY = 15;
+                        //int groundY = 10 + Mathf.RoundToInt(Mathf.PerlinNoise(gx * .04f + 1000, gz * .04f + 1000) * 5);
                         Block block;// TODO can't we just generate an ID based on position?
                         block.id = world.CurrentBlockId;
                         block.type = BlockType.Grass;
-                        long gx = cc.cx * Chunk.CHUNK_SIZE_X + x;
-                        long gz = cc.cz * Chunk.CHUNK_SIZE_Z + z;
-                        blocks[GetIndexFromLocal(x, 10 + Mathf.RoundToInt(Mathf.PerlinNoise(gx * .1f, gz * .1f) * 5), z)] = block;
+                        blocks[GetIndexFromLocal(x, groundY, z)] = block;
+                        for (int y = groundY - 1; y >= 0; y--)
+                        {
+                            block.id = world.CurrentBlockId;
+                            block.type = BlockType.Dirt;
+                            blocks[GetIndexFromGlobal(x, y, z)] = block;
+                        }
                     }
                 }
             }
@@ -70,15 +78,18 @@ namespace ARACore
         public void SetBlock(Int64 gx, Int64 gy, Int64 gz, Block block)
         {
             blocks[GetIndexFromGlobal(gx, gy, gz)] = block;
-            GenerateMesh();
+            if (BlockProperties.Get(block.type).generateMesh)
+            {
+                GenerateMesh();
+            }
         }
 
-        private static int GetIndexFromLocal(int lx, int ly, int lz)
+        static int GetIndexFromLocal(int lx, int ly, int lz)
         {
             return (lz << (ChunkCoords.CHUNK_SHIFT_Y + ChunkCoords.CHUNK_SHIFT_X)) + (ly << ChunkCoords.CHUNK_SHIFT_X) + lx;
         }
 
-        private static int GetIndexFromGlobal(Int64 gx, Int64 gy, Int64 gz)
+        static int GetIndexFromGlobal(Int64 gx, Int64 gy, Int64 gz)
         {
             int lx = (int)(gx & CHUNK_MASK_X);
             int ly = (int)(gy & CHUNK_MASK_Y);

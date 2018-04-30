@@ -5,7 +5,7 @@ using System;
 
 namespace ARACore
 {
-    public class ChunkCoords : IEquatable<ChunkCoords>
+    public struct ChunkCoords : IEquatable<ChunkCoords>
     {
         public const int CHUNK_SHIFT_X = 4; // 2^4 = 16
         public const int CHUNK_SHIFT_Y = 4;
@@ -22,7 +22,7 @@ namespace ARACore
             this.cz = cz;
         }
 
-        private static Int64 Expand(Int64 w)
+        static Int64 Expand(Int64 w)
         {
             w &= 0x3ff;
             w = (w | (w << 16)) & 4278190335;

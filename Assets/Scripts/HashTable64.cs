@@ -7,13 +7,13 @@ namespace Assets.Scripts
 {
     public class HashTable64<T>
     {
-        private class element
+        class element
         {
             public ulong _key;
             public T _value;
         };
-        private element[][] _buckets;
-        private uint _capacity;
+        element[][] _buckets;
+        uint _capacity;
 
         public HashTable64()
         {

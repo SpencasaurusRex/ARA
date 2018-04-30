@@ -26,17 +26,54 @@ namespace ARACore
 
     public enum MovementResultType
     {
-        Success,
+        DoneMoving,
+        StartedMoving,
         Blocked,
         OutOfFuel,
+        AlreadyMoving
     }
 
     public class MovementManager
     {
+        public void DrawMoveResults()
+        {
+            foreach (var kvp in movementResult)
+            {
+                switch (kvp.Value.type)
+                {
+                    case MovementResultType.AlreadyMoving:
+                        Gizmos.color = Color.yellow;
+                        break;
+                    case MovementResultType.Blocked:
+                        Gizmos.color = Color.red;
+                        break;
+                    case MovementResultType.DoneMoving:
+                        Gizmos.color = Color.green;
+                        break;
+                    case MovementResultType.OutOfFuel:
+                        Gizmos.color = Color.gray;
+                        break;
+                    case MovementResultType.StartedMoving:
+                        Gizmos.color = Color.cyan;
+                        break;
+                }
+                Color c = Gizmos.color;
+                c.a = 0.5f;
+                Gizmos.color = c;
+                RobotComponents rc = Manager.robotManager.Get(kvp.Key);
+                Gizmos.DrawCube(rc.tileEntity.transform.position, Vector3.one);
+            }
+        }
+
         #region Movement Related Types
         public struct MovementResult
         {
-            MovementResultType type;
+            public MovementResult(MovementResultType type)
+            {
+                this.type = type;
+            }
+
+            public MovementResultType type;
         }
 
         public struct MovementEntity
@@ -48,7 +85,7 @@ namespace ARACore
             public int ticksPerTurn;
         }
 
-        private class TileMove
+        class TileMove
         {
             public ulong id;
             public int progress;
@@ -58,7 +95,7 @@ namespace ARACore
             // TODO: Benchark using startingLoc, targetLoc here
         }
 
-        private class Turn
+        class Turn
         {
             public ulong id;
             public int progress;
@@ -75,7 +112,7 @@ namespace ARACore
         #endregion
 
         #region EqualityComparers
-        private class MovementCheckEqualityComparer : IEqualityComparer<MovementCheck>
+        class MovementCheckEqualityComparer : IEqualityComparer<MovementCheck>
         {
             public bool Equals(MovementCheck x, MovementCheck y)
             {
@@ -89,16 +126,18 @@ namespace ARACore
         }
         #endregion
 
-        Dictionary<ulong, MovementResult> movementResult;
+        public Dictionary<ulong, MovementResult> movementResult;
         Dictionary<ulong, MovementEntity> movementEntities;
         Dictionary<Vector3Int, TileMove> tileMoveRequests;
         Dictionary<ulong, TileMove> awardedMoves;
-        Dictionary<ulong, Turn> awardedTurns;
+        Dictionary<ulong, Turn> awardedTurns; 
         public Dictionary<MovementCheck, ulong> forwardChecks;
         public Dictionary<MovementCheck, ulong> blockedMoves;
+        ulong currentRequestId;
 
         public MovementManager()
         {
+            movementResult = new Dictionary<ulong, MovementResult>();
             movementEntities = new Dictionary<ulong, MovementEntity>();
             tileMoveRequests = new Dictionary<Vector3Int, TileMove>(new Vector3IntEqualityComparer());
             awardedMoves = new Dictionary<ulong, TileMove>();
@@ -121,6 +160,7 @@ namespace ARACore
         public void DestroyTileEntity(TileEntity entity)
         {
             movementEntities.Remove(entity.Id);
+            movementResult.Remove(entity.Id);
         }
 
         public bool IsMoving(ulong id)
@@ -130,10 +170,15 @@ namespace ARACore
 
         public void RequestMovement(ulong id, MovementAction action)
         {
+            //ulong requestId = currentRequestId++;
+
             // Check if we're already moving
             if (awardedMoves.ContainsKey(id) || awardedTurns.ContainsKey(id))
             {
+                movementResult[id] = new MovementResult(MovementResultType.AlreadyMoving);
                 return;
+                //movementResult[requestId] = new MovementResult(MovementResultType.AlreadyMoving);
+                //return requestId;
             }
 
             // TODO Track return values
@@ -162,7 +207,10 @@ namespace ARACore
                 turn.targetHeading = targetHeading;
 
                 awardedTurns.Add(id, turn);
+                movementResult[id] = new MovementResult(MovementResultType.StartedMoving);
                 return;
+                //movementResult[requestId] = new MovementResult(MovementResultType.StartedMoving);
+                //return requestId;
             }
 
             Vector3Int targetTile = movementEntity.tilePosition;
@@ -208,10 +256,12 @@ namespace ARACore
                 else
                 {
                     // There's something in front of us that isn't moving
-                    // TODO: Think about using special BlockMove class
                     blockedMoves.Add(forwardCheck, id);
                     return;
                 }
+
+                // We were too fast
+                movementResult[id] = new MovementResult(MovementResultType.Blocked);
                 return;
             }
             TileMove otherMove;
@@ -229,6 +279,7 @@ namespace ARACore
                     else
                     {
                         // Lost priority
+                        movementResult[id] = new MovementResult(MovementResultType.Blocked);
                         return;
                     }
                 }
@@ -241,6 +292,7 @@ namespace ARACore
                 else
                 {
                     // We're slower
+                    movementResult[id] = new MovementResult(MovementResultType.Blocked);
                     return;
                 }
             }
@@ -257,7 +309,9 @@ namespace ARACore
             foreach (var request in tileMoveRequests)
             {
                 TileMove tileMove = request.Value;
-                awardedMoves.Add(request.Value.id, tileMove);
+                ulong id = request.Value.id;
+                awardedMoves.Add(id, tileMove);
+                movementResult[id] = new MovementResult(MovementResultType.StartedMoving);
 
                 Manager.world.CreateBlock(request.Value.targetTile.x, request.Value.targetTile.y, request.Value.targetTile.z, BlockType.Robot);
 
@@ -268,7 +322,6 @@ namespace ARACore
                 ulong currentId = request.Value.id;
                 Vector3Int dir = Util.ToVector3Int(movementCheck.direction);
 
-                // TODO: Figure out a better way todo back-iteration
                 do
                 {
                     ulong lastId = currentId;
@@ -283,6 +336,7 @@ namespace ARACore
                         move.startingTile = movementCheck.tilePosition -= dir;
                         move.direction = movementCheck.direction;
                         awardedMoves.Add(currentId, move);
+                        movementResult[currentId] = new MovementResult(MovementResultType.StartedMoving);
                     }
                     else
                     {
@@ -324,6 +378,7 @@ namespace ARACore
             }
             foreach (var move in doneMoves)
             {
+                movementResult[move] = new MovementResult(MovementResultType.DoneMoving);
                 awardedMoves.Remove(move);
             }
 

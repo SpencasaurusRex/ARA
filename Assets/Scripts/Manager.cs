@@ -9,12 +9,14 @@ namespace ARACore
         public Material BlockMaterial;
         public static MovementManager movement;
         public static ChunkSet world;
+        public static IdManager robotManager;
 
         ScriptManager scriptManager;
         List<TileEntity> tileEntities = new List<TileEntity>();
 
         void Awake()
         {
+            BlockProperties.ReadJson();
             scriptManager = GetComponent<ScriptManager>();    
         }
 
@@ -22,15 +24,17 @@ namespace ARACore
         {
             Chunk.BlockMaterial = BlockMaterial;
             world = GetComponent<ChunkSet>();
+            world.GenerateWorld();
             movement = new MovementManager();
+            robotManager = new IdManager();
 
             #region Test setups
             // Single block..
-            ulong id;
-            if (CreateAt(Vector3.zero, 1, out id, 30, 30))
-            {
-                Camera.main.GetComponent<ThirdPersonCamera>().Focus(IdManager.Get(id).transform);
-            }
+            //ulong id;
+            //if (CreateAt(Vector3.zero, 1, out id, 30, 30))
+            //{
+            //    Camera.main.GetComponent<ThirdPersonCamera>().Focus(robotManager.Get(id).tileEntity.transform);
+            //}
             // ..And his friend
             //CreateAt(Vector3.one, 0, out id, 10);
 
@@ -113,16 +117,16 @@ namespace ARACore
             //}
 
             // Army
-            //ulong id;
-            //for (int i = 0; i < Chunk.CHUNK_SIZE_X * 2; i++)
-            //{
-            //    CreateAt(new Vector3(i, 0, -2), 1, out id, 3);
+            ulong id;
+            for (int i = 0; i < 80; i+=2)
+            {
+                //CreateAt(new Vector3(i, 0, -2), 1, out id, 3);
 
-            //    for (int j = 1; j < 20; j++)
-            //    {
-            //        CreateAt(new Vector3(i, 0, j - 1), 1, out id, j + i + 20);
-            //    }
-            //}
+                for (int j = 1; j < 80; j+=2)
+                {
+                    CreateAt(new Vector3(i, 0, j - 1), 1, out id, (j + i) / 2 + 20, (j + i) / 2 + 20);
+                }
+            }
 
             // Continuous army
             //for (int i = 0; i < Chunk.CHUNK_SIZE_X; i++)
@@ -209,10 +213,21 @@ namespace ARACore
                     }
                     movement.RequestMovement(robot.Id, (MovementAction)result);
                 }
+
+                //if (movement.IsMoving(robot.Id))
+                //{
+                //    return;
+                //}
+                //int scriptResult = scriptManager.Run(robot.scriptId);
+                //if (scriptResult < 0)
+                //{
+                //    continue;
+                //}
+                //movement.RequestMovement(robot.Id, (MovementAction)scriptResult);
             }
         }
 
-        private void OnDrawGizmos()
+        void OnDrawGizmos()
         {
             if (movement == null || movement.forwardChecks == null) return;
             Gizmos.color = Color.white;
@@ -234,9 +249,12 @@ namespace ARACore
                 Gizmos.DrawLine(start, end);
                 Gizmos.DrawCube(end, Vector3.one * 0.25f);
             }
+
+            // Draw movemenResults
+            movement.DrawMoveResults();
         }
 
-        private bool CreateAt(Vector3 pos, int heading, out ulong id, int ticksPerTile = 50, int ticksPerTurn = 50)
+        bool CreateAt(Vector3 pos, int heading, out ulong id, int ticksPerTile = 50, int ticksPerTurn = 50)
         {
             TileEntity obj = Instantiate(robotPrefab);
             obj.transform.position = pos;
@@ -248,10 +266,10 @@ namespace ARACore
         }
 
         // TODO Make this deterministic if two entities are being created onto the same tile
-        private bool RegisterWithSystems(TileEntity entity, out ulong id)
+        bool RegisterWithSystems(TileEntity entity, out ulong id)
         {
             // Set ID
-            id = IdManager.Assign(entity.gameObject);
+            id = robotManager.Assign(entity.gameObject);
 
             // ChunkSet stuff
             Vector3Int tileLocation = Vector3Int.FloorToInt(entity.transform.position);
@@ -262,7 +280,7 @@ namespace ARACore
             else
             {
                 Destroy(entity.gameObject);
-                IdManager.Unassign(id);
+                robotManager.Unassign(id);
                 return false;
             }
 

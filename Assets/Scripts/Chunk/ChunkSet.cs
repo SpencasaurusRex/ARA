@@ -20,18 +20,21 @@ namespace ARACore
 
         Dictionary<ChunkCoords, Chunk> chunks = new Dictionary<ChunkCoords, Chunk>();
 
-        void Awake()
+        public void GenerateWorld()
         {
-            for (int x = -2; x <= 2; x++)
+            for (int x = -10; x <= 10; x++)
             {
-                for (int z = -2; z <= 2; z++)
+                for (int z = -10; z <= 10; z++)
                 {
-                    GenerateChunk(new ChunkCoords(x, -1, z));    
+                    for (int y = -1; y <= 1; y++)
+                    {
+                        GenerateChunk(new ChunkCoords(x, y, z));
+                    }
                 }
             }
         }
 
-        private void Update()
+        void Update()
         {
             // TODO: Move mesh logic into a MeshManager
             // TODO: Update active mesh renderers based on camera's position
@@ -78,7 +81,7 @@ namespace ARACore
             return GetBlockType(gx, gy, gz) == BlockType.Air;
         }
 
-        private Chunk GetChunk(Int64 gx, Int64 gy, Int64 gz)
+        Chunk GetChunk(Int64 gx, Int64 gy, Int64 gz)
         {
             ChunkCoords cc = ChunkCoords.FromBlockCoords(gx, gy, gz);
             Chunk c;

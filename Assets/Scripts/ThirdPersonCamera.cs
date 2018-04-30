@@ -78,7 +78,7 @@ public class ThirdPersonCamera : MonoBehaviour
         refocusing = false;
     }
 
-    private void Start()
+    void Start()
     {
         currentDistance = targetDistance = StartDistance;
 #if !UNITY_EDITOR
@@ -86,7 +86,7 @@ public class ThirdPersonCamera : MonoBehaviour
 #endif
     }
 
-    private void Update()
+    void Update()
     {
 #if UNITY_EDITOR
         zoomSpeed = new Line(DistanceMinMax, ZoomSpeedMinMax);

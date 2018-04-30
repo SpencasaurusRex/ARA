@@ -8,7 +8,7 @@ public class ScriptManager : MonoBehaviour
     ulong currentId;
     Dictionary<ulong, MoonSharp.Interpreter.Coroutine> coroutines;
 
-    private void Awake()
+    void Awake()
     {
         coroutines = new Dictionary<ulong, MoonSharp.Interpreter.Coroutine>();
     }
@@ -17,7 +17,8 @@ public class ScriptManager : MonoBehaviour
     {
         var id = currentId++;
         var script = new Script();
-        script.DoFile("script");
+        int index = Random.Range(0, 9);
+        script.DoFile("script" + index);
         DynValue dynRun = script.CreateCoroutine(script.Globals.Get("run"));
         coroutines[id] = dynRun.Coroutine;
         return id;
