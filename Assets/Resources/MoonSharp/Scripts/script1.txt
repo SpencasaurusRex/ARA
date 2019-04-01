@@ -8,33 +8,75 @@
 
 function forward()
 	coroutine.yield(0)
+	return result(id)
 end
 
 function up()
 	coroutine.yield(1)
+	return result(id)
 end
 
 function back()
 	coroutine.yield(2)
+	return result(id)
 end
 
 function down()
 	coroutine.yield(3)
+	return result(id)
 end
 
 function turnLeft()
 	coroutine.yield(4)
+	return result(id)
 end
 
 function turnRight()
 	coroutine.yield(5)
+	return result(id)
 end
 
 function run()
-	while true do
-		forward()
-		up()
-		turnRight()
+	while x(id) ~= targetX() or z(id) ~= targetZ() do
+		while x(id) ~= targetX() do
+			if x(id) < targetX() then
+				face(0)
+			elseif x(id) > targetX() then
+				face(2)
+			end
+			move()
+		end
+		while z(id) ~= targetZ() do
+			if z(id) > targetZ() then
+				face(3)
+			elseif z(id) < targetZ() then
+				face(1)
+			end
+			move()
+		end
+	end
+	while y(id) ~= 0 do
 		down()
+	end
+end
+
+function targetX()
+	return math.ceil(id / 2)
+end
+
+function targetZ()
+	return math.floor(id / 2)
+end
+
+function face(dir)
+	if heading(id) ~= dir then
+	  turnRight()
+	end
+end
+
+function move()
+	if forward() == false then
+		up()
+		forward()
 	end
 end

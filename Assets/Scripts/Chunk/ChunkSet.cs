@@ -22,9 +22,9 @@ namespace ARACore
 
         public void GenerateWorld()
         {
-            for (int x = -10; x <= 10; x++)
+            for (int x = -13; x <= 13; x++)
             {
-                for (int z = -10; z <= 10; z++)
+                for (int z = -13; z <= 13; z++)
                 {
                     for (int y = -1; y <= 1; y++)
                     {

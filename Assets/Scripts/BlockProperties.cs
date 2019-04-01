@@ -25,7 +25,7 @@ namespace ARACore
 
         public static void ReadJson()
         {
-            string json = System.IO.File.ReadAllText(@"D:\Projects\ARA\Assets\Config\blockProperties.json");
+            string json = System.IO.File.ReadAllText(@"F:\Dev\Projects\ARA\Assets\Config\blockProperties.json");
             var blockInfo = JsonConvert.DeserializeObject<Dictionary<string, JsonBlockProperties>>(json);
 
             foreach (var typeName in Enum.GetNames(typeof(BlockType)))

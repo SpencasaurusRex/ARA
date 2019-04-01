@@ -32,7 +32,7 @@ namespace ARACore
             coords = cc;
 
             // Generate world
-            if (cc.cy == -1 && Math.Abs(cc.cx) <= 5 && Math.Abs(cc.cz) <= 5)
+            if (cc.cy == -1 && cc.cx >= 0 && cc.cx < 12 && cc.cz >= 0 && cc.cz < 12)
             {
                 for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
                 {

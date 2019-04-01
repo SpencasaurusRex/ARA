@@ -127,7 +127,7 @@ namespace ARACore
         #endregion
 
         public Dictionary<ulong, MovementResult> movementResult;
-        Dictionary<ulong, MovementEntity> movementEntities;
+        public Dictionary<ulong, MovementEntity> movementEntities;
         Dictionary<Vector3Int, TileMove> tileMoveRequests;
         Dictionary<ulong, TileMove> awardedMoves;
         Dictionary<ulong, Turn> awardedTurns; 
@@ -256,6 +256,7 @@ namespace ARACore
                 else
                 {
                     // There's something in front of us that isn't moving
+                    movementResult[id] = new MovementResult(MovementResultType.Blocked);
                     blockedMoves.Add(forwardCheck, id);
                     return;
                 }
@@ -402,6 +403,7 @@ namespace ARACore
             }
             foreach (var turn in doneTurns)
             {
+                movementResult[turn] = new MovementResult(MovementResultType.DoneMoving);
                 awardedTurns.Remove(turn);
             }
         }

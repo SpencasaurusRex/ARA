@@ -17,8 +17,208 @@ namespace ARACore
         void Awake()
         {
             BlockProperties.ReadJson();
-            scriptManager = GetComponent<ScriptManager>();    
+            scriptManager = new ScriptManager();
         }
+
+        #region Test setups
+        void SingleBlock()
+        {
+            ulong id;
+            if (CreateAt(Vector3.zero, 1, out id, 30, 30))
+            {
+                Camera.main.GetComponent<ThirdPersonCamera>().Focus(robotManager.Get(id).tileEntity.transform);
+            }
+        }
+
+        void Friend()
+        {
+            ulong id;
+            CreateAt(Vector3.one, 0, out id, 10);
+        }
+
+        void FullFill()
+        {
+            for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
+            {
+                for (int z = 0; z < Chunk.CHUNK_SIZE_Z; z++)
+                {
+                    ulong id;
+                    CreateAt(new Vector3(x, 0, z), 1, out id);
+                }
+            }
+        }
+
+        void Lattice()
+        {
+            for (int x = 0; x < Chunk.CHUNK_SIZE_X; x += 2)
+            {
+                for (int z = 0; z < Chunk.CHUNK_SIZE_Z; z += 2)
+                {
+                    ulong id;
+                    CreateAt(new Vector3(x, 0, z), 1, out id);
+                }
+            }
+        }
+
+        void RandomFill()
+        {
+            ulong id;
+            for (int i = 0; i < 1000;)
+            {
+                int x = Random.Range(0, Chunk.CHUNK_SIZE_X * 2);
+                int y = Random.Range(0, Chunk.CHUNK_SIZE_Y / 2);
+                int z = Random.Range(0, Chunk.CHUNK_SIZE_Z * 2);
+
+                if (CreateAt(new Vector3(x, y, z), Random.Range(0, 4), out id, Random.Range(10, 50), Random.Range(10, 50)))
+                {
+                    i++;
+                }
+            }
+        }
+
+        void SideCollision()
+        {
+            ulong id;
+            CreateAt(new Vector3(0, 0, 0), 1, out id, 10);
+            for (int z = 1; z < 10; z++)
+            {
+                CreateAt(new Vector3(0, 0, z), 0, out id, z * 15);
+            }
+        }
+
+        void CongaLine()
+        {
+            ulong id;
+            for (int i = 0; i < Chunk.CHUNK_SIZE_X; i++)
+            {
+                CreateAt(new Vector3(i, 0, 0), 0, out id);
+            }
+        }
+
+        void OpposingSides()
+        {
+            ulong id;
+            for (int i = 0; i < Chunk.CHUNK_SIZE_X; i++)
+            {
+                CreateAt(new Vector3(i, 0, 0), 1, out id, (i + 1) * 5);
+                CreateAt(new Vector3(i, 0, Chunk.CHUNK_SIZE_Z), 3, out id, (i + 3) * 3);
+            }
+        }
+
+        void Army()
+        {
+            ulong id;
+            for (int i = 0; i < 40; i++)
+            {
+                CreateAt(new Vector3(i, 0, -2), 1, out id, 3);
+                for (int j = 1; j < 40; j++)
+                {
+                    CreateAt(new Vector3(i, 0, j - 1), 1, out id, (j + i) / 2 + 20, (j + i) / 2 + 20);
+                }
+            }
+        }
+
+        void ContinousArmy()
+        {
+            ulong id;
+            for (int i = 0; i < Chunk.CHUNK_SIZE_X; i++)
+            {
+                CreateAt(new Vector3(i, 0, -2), 1, out id);
+
+                CreateAt(new Vector3(i, 0, 0), 1, out id);
+                CreateAt(new Vector3(i, 0, 1), 1, out id);
+                CreateAt(new Vector3(i, 0, 2), 1, out id);
+                CreateAt(new Vector3(i, 0, 3), 1, out id);
+                CreateAt(new Vector3(i, 0, 4), 1, out id);
+            }
+        }
+
+        void ClashingArmies()
+        {
+            ulong id;
+            for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
+            {
+                for (int z = 0; z < 5; z++)
+                {
+                    CreateAt(new Vector3(x, 0, z), 1, out id, 30, 30);
+                }
+            }
+            for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
+            {
+                for (int z = 0; z < 5; z++)
+                {
+                    CreateAt(new Vector3(x, 0, Chunk.CHUNK_SIZE_Z * 2 - z), 3, out id, 20, 20);
+                }
+            }
+            for (int x = 0; x < 5; x++)
+            {
+                for (int z = Chunk.CHUNK_SIZE_Z / 2; z < Chunk.CHUNK_SIZE_Z * 1.5f; z++)
+                {
+                    CreateAt(new Vector3(x - 6, 0, z), 0, out id, 15, 15);
+                }
+            }
+            for (int x = 0; x < 5; x++)
+            {
+                for (int z = Chunk.CHUNK_SIZE_Z / 2; z < Chunk.CHUNK_SIZE_Z * 1.5f; z++)
+                {
+                    CreateAt(new Vector3(Chunk.CHUNK_SIZE_X - x + 5, 0, z), 2, out id, 13, 13);
+                }
+            }
+        }
+
+        void LockedFlower()
+        {
+            ulong id;
+            CreateAt(new Vector3(0, 0, 0), 0, out id);
+            CreateAt(new Vector3(1, 0, 0), 1, out id);
+            CreateAt(new Vector3(1, 0, 1), 2, out id);
+            CreateAt(new Vector3(0, 0, 1), 3, out id);
+        }
+
+        void MatrixFill()
+        {
+            ulong id;
+            for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
+            {
+                for (int y = 0; y < Chunk.CHUNK_SIZE_Y; y++)
+                {
+                    for (int z = 0; z < Chunk.CHUNK_SIZE_Z; z++)
+                    {
+                        if (x % 2 == 0 && y % 4 == 0 && z % 2 == 0)
+                        {
+                            CreateAt(new Vector3(x, y, z), Random.Range(0, 4), out id, Random.Range(10, 100), Random.Range(10, 100));
+                        }
+                    }
+                }
+            }
+        }
+
+        void Line()
+        {
+            ulong id;
+            for (int i = 0; i < 10; i++)
+            {
+                CreateAt(new Vector3(i, 0, 0), 1, out id);
+            }
+        }
+
+        void Cube()
+        {
+            ulong id = 0;
+            const int cubeSize = 12;
+            for (int x = 0; x < cubeSize; x++)
+            {
+                for (int y = 0; y < cubeSize / 2; y++)
+                {
+                    for (int z = 0; z < cubeSize; z++)
+                    {
+                        int ticksPerTile = (35 - (int)(id / (cubeSize * cubeSize / 2))) / 2;
+                        CreateAt(new Vector3(x, y, z), 0, out id, ticksPerTile, ticksPerTile / 2);
+                    }
+                }
+            }
+        }
+        #endregion Test setups
 
         void Start()
         {
@@ -28,176 +228,10 @@ namespace ARACore
             movement = new MovementManager();
             robotManager = new IdManager();
 
-            #region Test setups
-            // Single block..
-            //ulong id;
-            //if (CreateAt(Vector3.zero, 1, out id, 30, 30))
-            //{
-            //    Camera.main.GetComponent<ThirdPersonCamera>().Focus(robotManager.Get(id).tileEntity.transform);
-            //}
-            // ..And his friend
-            //CreateAt(Vector3.one, 0, out id, 10);
-
-            // Full fill
-            //for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
-            //{
-            //    for (int z = 0; z < Chunk.CHUNK_SIZE_Z; z++)
-            //    {
-            //        ulong id;
-            //        CreateAt(new Vector3(x, 0, z), 1, out id);
-            //    }
-            //}
-
-            // Lattice
-            //for (int x = 0; x < Chunk.CHUNK_SIZE_X; x+=2)
-            //{
-            //    for (int z = 0; z < Chunk.CHUNK_SIZE_Z; z+=2)
-            //    {
-            //        ulong id;
-            //        CreateAt(new Vector3(x, 0, z), 1, out id);
-            //    }
-            //}
-
-            // Random fill
-            //for (int i = 0; i < 1000; i++)
-            //{
-            //    TileEntity obj;
-            //    do
-            //    {
-            //        int x = Random.Range(0, Chunk.CHUNK_SIZE_X * 2);
-            //        int y = Random.Range(0, Chunk.CHUNK_SIZE_Y / 2);
-            //        int z = Random.Range(0, Chunk.CHUNK_SIZE_Z * 2);
-            //        obj = Instantiate(prefab);
-            //        obj.transform.position = new Vector3(x, y, z);
-            //        obj.ticksPerTile = Random.Range(10, 50);
-            //        obj.ticksPerTurn = Random.Range(10, 50);
-            //    }
-            //    while (!RegisterWithSystems(obj));
-            //}
-
-            // Side-Collision checks
-            //CreateAt(new Vector3(0, 0, 0), 1, 10);
-            //for (int z = 1; z < 10; z++)
-            //{
-            //    CreateAt(new Vector3(0, 0, z), 0, z * 15);
-            //}
-
-            // Read pixel image
-            //Color[] pixels = sourceTexture.GetPixels();
-            //int idIndex = 0;
-            //for (int i = 0; i < pixels.Length; i++)
-            //{
-            //    if (pixels[i].r == 0)
-            //    {
-            //        int x = i % sourceTexture.width;
-            //        int y = MovementManager.CHUNK_HEIGHT / 2;
-            //        int z = i / sourceTexture.width;
-            //        MovementManager.pixelTarget[idIndex++] = new Vector3Int(x, y, z);
-            //    }
-            //}
-
-            //var obj = Instantiate(TileEntity);
-            //MovementManager.RegisterTileEntity(obj, new Vector3Int(0, 0, 0), 50, 50, 0);
-
-            // Conga line
-            //TileEntity obj;
-            //for (int i = 0; i < Chunk.CHUNK_SIZE_X; i++)
-            //{
-            //    obj = Instantiate(prefab);
-            //    obj.transform.position = new Vector3(i, 0, 0);
-            //    RegisterWithSystems(obj);
-            //}
-
-            // Opposing Sides
-            //TileEntity obj;
-            //for (int i = 0; i < Chunk.CHUNK_SIZE_X; i++)
-            //{
-            //    CreateAt(new Vector3(i, 0, 0), 1, (i + 1) * 5);
-            //    CreateAt(new Vector3(i, 0, Chunk.CHUNK_SIZE_Z), 3, (i + 3) * 3);
-            //}
-
-            // Army
-            ulong id;
-            for (int i = 0; i < 80; i+=2)
-            {
-                //CreateAt(new Vector3(i, 0, -2), 1, out id, 3);
-
-                for (int j = 1; j < 80; j+=2)
-                {
-                    CreateAt(new Vector3(i, 0, j - 1), 1, out id, (j + i) / 2 + 20, (j + i) / 2 + 20);
-                }
-            }
-
-            // Continuous army
-            //for (int i = 0; i < Chunk.CHUNK_SIZE_X; i++)
-            //{
-            //    CreateAt(new Vector3(i, 0, -2), 1);
-
-            //    CreateAt(new Vector3(i, 0, 0), 1);
-            //    CreateAt(new Vector3(i, 0, 1), 1);
-            //    CreateAt(new Vector3(i, 0, 2), 1);
-            //    CreateAt(new Vector3(i, 0, 3), 1);
-            //    CreateAt(new Vector3(i, 0, 4), 1);
-            //}
-
-            // Clashing armies
-            //ulong id;
-            //for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
-            //{
-            //    for (int z = 0; z < 5; z++)
-            //    {
-            //        CreateAt(new Vector3(x, 0, z), 1, out id);
-            //    }
-            //}
-            //for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++)
-            //{
-            //    for (int z = 0; z < 5; z++)
-            //    {
-            //        CreateAt(new Vector3(x, 0, Chunk.CHUNK_SIZE_Z * 2 - z), 3, out id);
-            //    }
-            //}
-            //for (int x = 0; x < 5; x++)
-            //{
-            //    for (int z = Chunk.CHUNK_SIZE_Z / 2; z < Chunk.CHUNK_SIZE_Z * 1.5f; z++)
-            //    {
-            //        CreateAt(new Vector3(x - 5, 0, z), 0, out id, 60);
-            //    }
-            //}
-            //for (int x = 0; x < 5; x++)
-            //{
-            //    for (int z = Chunk.CHUNK_SIZE_Z / 2; z < Chunk.CHUNK_SIZE_Z * 1.5f; z++)
-            //    {
-            //        CreateAt(new Vector3(Chunk.CHUNK_SIZE_X - x + 5, 0, z), 2, out id, 60 - x);
-            //    }
-            //}
-
-            // Locked flower
-            //CreateAt(new Vector3(0, 0, 0), 0, 5);
-            //CreateAt(new Vector3(1, 0, 0), 1, 5);
-            //CreateAt(new Vector3(1, 0, 1), 2, 5);
-            //CreateAt(new Vector3(0, 0, 1), 3, 5);
-
-            // Lel wat
-            //CreateAt(new Vector3(0, 0, 0), 0, 2, 5);
-            //CreateAt(new Vector3(1, 0, 0), 1, 5, 5);
-            //CreateAt(new Vector3(1, 0, 1), 2, 5, 5);
-
-            // Matrix fill
-            //for (int x = 0; x < MovementManager.CHUNK_LENGTH_X; x++)
-            //{
-            //    for (int y = 0; y < MovementManager.CHUNK_HEIGHT; y++)
-            //    {
-            //        for (int z = 0; z < MovementManager.CHUNK_LENGTH_Z; z++)
-            //        {
-            //            if (x % 2 == 0 && y % 4 == 0 && z % 2 == 0)
-            //            {
-            //                var obj = Instantiate(TileEntity);
-            //                MovementManager.RegisterTileEntity(obj, new Vector3Int(x, y, z), Random.Range(10, 100), Random.Range(10, 100), Random.Range(0, 4));
-            //            }
-            //        }
-            //    }
-            //}
-            #endregion
+            //ContinousArmy();
+            //ClashingArmies();
+            Cube();
+            //Line();
         }
         void FixedUpdate()
         {
@@ -213,17 +247,6 @@ namespace ARACore
                     }
                     movement.RequestMovement(robot.Id, (MovementAction)result);
                 }
-
-                //if (movement.IsMoving(robot.Id))
-                //{
-                //    return;
-                //}
-                //int scriptResult = scriptManager.Run(robot.scriptId);
-                //if (scriptResult < 0)
-                //{
-                //    continue;
-                //}
-                //movement.RequestMovement(robot.Id, (MovementAction)scriptResult);
             }
         }
 
@@ -250,7 +273,6 @@ namespace ARACore
                 Gizmos.DrawCube(end, Vector3.one * 0.25f);
             }
 
-            // Draw movemenResults
             movement.DrawMoveResults();
         }
 
@@ -288,7 +310,7 @@ namespace ARACore
             movement.RegisterTileEntity(entity);
 
             // TODO: Move script instantiation
-            ulong scriptId = scriptManager.CreateScript();
+            ulong scriptId = scriptManager.CreateScript(id);
             entity.scriptId = scriptId;
 
             tileEntities.Add(entity);
