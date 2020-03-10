@@ -3,5 +3,6 @@
     public interface IUpdateSystem
     {
         void Update(float fractional);
+        void AdvanceTick();
     }
 }

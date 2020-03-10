@@ -4,35 +4,47 @@ using UnityEngine;
 
 namespace ARACore
 {
-    public class UpdateManager : MonoBehaviour
+    public class UpdateManager
     {
-        // Configuration
-        public float TickLength = 0.5f;
+        public const float TickLength = 0.5f;
         
-        // Runtime
-        List<IUpdateSystem> updateSystems = new List<IUpdateSystem>();
-        float progress = -0.01f;
+        readonly List<IUpdateSystem> updateSystems = new List<IUpdateSystem>();
+        float progress;
         float lastProgress;
+        bool firstRun = true;
 
-        void Awake()
+        public UpdateManager(params IUpdateSystem[] system)
         {
-            updateSystems.Add(new TileEntityUpdateSystem());
-            updateSystems.Add(new ScriptUpdateSystem());
-            updateSystems.Add(new MovementUpdateSystem());
+            updateSystems.AddRange(system);
         }
 
-        void Update()
+        public void Update(float deltaTime)
         {
             lastProgress = progress;
-            progress += Time.deltaTime / TickLength;
+            progress += deltaTime / TickLength;
+
+            if (firstRun)
+            {
+                AdvanceTick();
+                firstRun = false;
+            }
 
             UpdateSystems();
             // Handle when we cross a tick boundary
-            while (progress > 1)
+            while (progress >= 1)
             {
+                AdvanceTick();
                 lastProgress = 0;
                 progress--;
                 UpdateSystems();
+            }
+        }
+
+        void AdvanceTick()
+        {
+            foreach (var system in updateSystems)
+            {
+                system.AdvanceTick();
             }
         }
 
