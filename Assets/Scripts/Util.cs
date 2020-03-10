@@ -1,11 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace ARACore
 {
+    public enum Direction
+    {
+        North,
+        East,
+        West,
+        South,
+        Up,
+        Down
+    }
+
+    public enum MovementAction
+    {
+        TurnLeft,
+        TurnRight,
+        Up,
+        Down,
+        Forward,
+        Back
+    }
+
     public class Util
     {
         public static Quaternion ToQuaternion(int h)
@@ -31,7 +49,7 @@ namespace ARACore
                 case Direction.South: return Back;
                 case Direction.Up: return Vector3Int.up;
                 case Direction.Down: return Vector3Int.down;
-                default: throw new ArgumentException("What are you even doing mate?");
+                default: throw new ArgumentException("Invalid direction");
             }
         }
 
