@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using UnityEditor;
-using UnityEngine.TestTools;
+﻿using UnityEngine.TestTools;
 using NUnit.Framework;
 using System.Collections;
 using ARACore;
@@ -49,20 +47,11 @@ public class UnitTest {
         Assert.AreEqual(cc1, cc2);
     }
 
-    [Test]
-    public void MovementManagerPriority()
-    {
-        // Test all orientations with different, then same speeds
-
-        //MovementManager.RegisterTileEntity(new TileEntity(), new Vector3Int(0, 0, 0), 10, 10, 0); // Down
-        //MovementManager.RegisterTileEntity(new TileEntity(), new Vector3Int(0, 1, 0), 10, 10, 0); // Up
-    }
-
     // A UnityTest behaves like a coroutine in PlayMode
     // and allows you to yield null to skip a frame in EditMode
-    [UnityTest]
-    public IEnumerator UnitTestWithEnumeratorPasses() {
-        // TODO test MovementManager
-        yield return null;
-    }
+    //[UnityTest]
+    //public IEnumerator UnitTestWithEnumeratorPasses() {
+    //    // TODO test MovementManager
+    //    yield return null;
+    //}
 }

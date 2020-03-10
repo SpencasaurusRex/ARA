@@ -6,8 +6,8 @@ namespace ARACore
 {
     public enum Direction
     {
-        North,
         East,
+        North,
         West,
         South,
         Up,
@@ -16,12 +16,12 @@ namespace ARACore
 
     public enum MovementAction
     {
-        TurnLeft,
-        TurnRight,
-        Up,
-        Down,
         Forward,
-        Back
+        Up,
+        Back,
+        Down,
+        TurnLeft,
+        TurnRight
     }
 
     public class Util
