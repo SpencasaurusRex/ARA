@@ -36,6 +36,13 @@ namespace Assets.Scripts.Chunk
             Blocks[GetIndexFromGlobal(global)] = block;
         }
 
+        public void SetBlock(Vector3Int global, Block block, Entity entity)
+        {
+            int index = GetIndexFromGlobal(global);
+            Blocks[index] = block;
+            TileEntities[index] = entity;
+        }
+
         static int GetIndexFromLocal(Vector3Int local)
         {
             return (local.z << (ChunkBits * 2)) + 

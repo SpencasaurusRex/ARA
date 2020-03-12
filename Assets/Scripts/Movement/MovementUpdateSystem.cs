@@ -16,6 +16,10 @@ namespace Assets.Scripts.Movement
         readonly Dictionary<Vector3Int, Vector3Int> movementDependency = new Dictionary<Vector3Int, Vector3Int>();
 
         readonly EntitySet movementRequestSet;
+        readonly EntitySet doneMovingSet;
+
+        Entity[] entitiesToProcess;
+        int lastIndexProcessed;
 
         static readonly Vector3Int[] Directions = {new Vector3Int(1, 0, 0), new Vector3Int(-1, 0, 0), new Vector3Int(0, 0, -1), new Vector3Int(0, 0, 1), new Vector3Int(0, 1, 0), new Vector3Int(0, -1, 0), };
 
@@ -24,16 +28,20 @@ namespace Assets.Scripts.Movement
             this.world = world;
 
             movementRequestSet = world.GetEntities().With<MovementRequest>().AsSet();
+            doneMovingSet = world.GetEntities().With<Movement>().Without<MovementResult>().AsSet();
         }
 
         public void Update(float fractional)
         {
-            // Only process if we're at the end of the frame
             if (Math.Abs(fractional - 1f) > float.Epsilon) return;
 
+            entitiesToProcess = movementRequestSet.GetEntities().ToArray();
+            
             var movementRequestEntities = movementRequestSet.GetEntities();
             foreach (var entity in movementRequestEntities)
+            //for (int i = lastIndexProcessed; i < entitiesToProcess.Length * fractional; i++)
             {
+                //Entity entity = entitiesToProcess[i];
                 var request = entity.Get<MovementRequest>();
                 var movement = new Movement
                 {
@@ -45,6 +53,7 @@ namespace Assets.Scripts.Movement
                 };
                 requestedMovements.Add(movement);
                 movementFromLookup.Add(movement.Start, movement);
+                //lastIndexProcessed = i;
             }
         }
 
@@ -52,9 +61,11 @@ namespace Assets.Scripts.Movement
         {
             CheckMovements();
             WriteResults();
+            StopMoving();
             requestedMovements.Clear();
             movementFromLookup.Clear();
             movementDependency.Clear();
+            lastIndexProcessed = 0;
         }
 
         void CheckMovements()
@@ -142,6 +153,15 @@ namespace Assets.Scripts.Movement
                 movementComp.Start = movement.Start;
                 movementComp.Destination = movement.Destination;
                 movementComp.Direction = movement.Direction;
+            }
+
+        }
+
+        void StopMoving()
+        {
+            foreach (var entity in doneMovingSet.GetEntities())
+            {
+                entity.Remove<Movement>();
             }
         }
 

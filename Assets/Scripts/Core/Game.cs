@@ -49,11 +49,23 @@ namespace Assets.Scripts.Core
 
         void Setup()
         {
-            Robot(Vector3Int.zero, new Vector3Int(0, 0, 1));
-            Robot(new Vector3Int(0, 0, 19), new Vector3Int(0, 0, -1));
+            var global = world.CreateEntity();
+            global.Set(new Global());
+
+            for (int x = 0; x < 10; x++)
+            {
+                for (int y = 0; y < 10; y++)
+                {
+                    for (int z = 0; z < 10; z++)
+                    {
+                        Robot(new Vector3Int(x, y, z));
+                    }
+                }
+            }
         }
 
-        Entity Robot(Vector3Int initialPosition, Vector3Int direction)
+        static int id;
+        Entity Robot(Vector3Int initialPosition)
         {
             var entity = world.CreateEntity();
             entity.Set(mesh);
@@ -62,7 +74,8 @@ namespace Assets.Scripts.Core
             entity.Set(new Translation { Value = initialPosition });
             entity.Set(new Rotation());
             entity.Set(new GridPosition { Value = initialPosition});
-            entity.Set(new DesiredMovement { Value = direction });
+            entity.Set(new Scale { Value = new Vector3(.9f, .9f, .9f)});
+            entity.Set(new ID {Value = id++});
 
             return entity;
         }

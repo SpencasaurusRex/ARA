@@ -39,10 +39,16 @@ namespace Assets.Scripts.Rendering
                 var mesh = entity.Get<Mesh>();
                 var material = entity.Get<Material>();
                 var transform = entity.Get<LocalToWorld>().Matrix;
+
+                Vector3 scale = Vector3.one;
+                if (entity.Has<Scale>()) scale = entity.Get<Scale>().Value;
+                Quaternion rotation = Quaternion.identity;
+                if (entity.Has<Rotation>()) rotation = entity.Get<Rotation>().Value;
+
                 Graphics.DrawMesh(mesh, transform, material, 0, Camera.main);
                 
                 #if UNITY_EDITOR
-                GizmoRenderList.Add(new GizmoRender { Mesh = mesh, Translation = transform.Translation(), Quaternion = Quaternion.identity, Scale = Vector3.one});
+                GizmoRenderList.Add(new GizmoRender { Mesh = mesh, Translation = transform.Translation(), Quaternion = rotation, Scale = scale});
                 #endif
             }
         }

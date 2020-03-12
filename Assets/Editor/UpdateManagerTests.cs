@@ -19,7 +19,7 @@ namespace Assets.Editor
 
             Assert.AreEqual(1, A.AdvanceTickCalls);
             Assert.AreEqual(1, A.Fractionals.Count);
-            Assert.AreEqual(0.5f, A.Fractionals[0], Double.Epsilon);
+            Assert.AreEqual(0.5f, A.Fractionals[0], float.Epsilon);
         }
 
         [Test]
@@ -36,9 +36,9 @@ namespace Assets.Editor
 
             Assert.AreEqual(1, A.AdvanceTickCalls);
             Assert.AreEqual(3, A.Fractionals.Count);
-            Assert.AreEqual(0.25f, A.Fractionals[0], Double.Epsilon);
-            Assert.AreEqual(0.50f, A.Fractionals[1], Double.Epsilon);
-            Assert.AreEqual(0.75f, A.Fractionals[2], Double.Epsilon);
+            Assert.AreEqual(0.25f, A.Fractionals[0], float.Epsilon);
+            Assert.AreEqual(0.50f, A.Fractionals[1], float.Epsilon);
+            Assert.AreEqual(0.75f, A.Fractionals[2], float.Epsilon);
         }
 
         [Test]
@@ -54,9 +54,9 @@ namespace Assets.Editor
 
             Assert.AreEqual(2, A.AdvanceTickCalls);
             Assert.AreEqual(3, A.Fractionals.Count);
-            Assert.AreEqual(0.75f, A.Fractionals[0], Double.Epsilon);
-            Assert.AreEqual(1.00f, A.Fractionals[1], Double.Epsilon);
-            Assert.AreEqual(0.50f, A.Fractionals[2], Double.Epsilon);
+            Assert.AreEqual(0.75f, A.Fractionals[0], float.Epsilon);
+            Assert.AreEqual(1.00f, A.Fractionals[1], float.Epsilon);
+            Assert.AreEqual(0.50f, A.Fractionals[2], float.Epsilon);
         }
 
         [Test]
@@ -73,10 +73,10 @@ namespace Assets.Editor
 
             Assert.AreEqual(3, A.AdvanceTickCalls);
             Assert.AreEqual(4, A.Fractionals.Count);
-            Assert.AreEqual(0.5f, A.Fractionals[0], Double.Epsilon);
-            Assert.AreEqual(1.0f, A.Fractionals[1], Double.Epsilon);
-            Assert.AreEqual(1.0f, A.Fractionals[2], Double.Epsilon);
-            Assert.AreEqual(0.5f, A.Fractionals[3], Double.Epsilon);
+            Assert.AreEqual(0.5f, A.Fractionals[0], float.Epsilon);
+            Assert.AreEqual(1.0f, A.Fractionals[1], float.Epsilon);
+            Assert.AreEqual(1.0f, A.Fractionals[2], float.Epsilon);
+            Assert.AreEqual(0.5f, A.Fractionals[3], float.Epsilon);
         }
 
         [Test]
@@ -98,8 +98,8 @@ namespace Assets.Editor
             Assert.AreEqual(1, A.Fractionals.Count);
             Assert.AreEqual(1, B.Fractionals.Count);
 
-            Assert.AreEqual(1.0f, A.Fractionals[0], Double.Epsilon);
-            Assert.AreEqual(0.5f, B.Fractionals[0], Double.Epsilon);
+            Assert.AreEqual(1.0f, A.Fractionals[0], float.Epsilon);
+            Assert.AreEqual(0.5f, B.Fractionals[0], float.Epsilon);
         }
 
         [Test]
@@ -124,11 +124,11 @@ namespace Assets.Editor
             Assert.AreEqual(2, B.Fractionals.Count);
             Assert.AreEqual(1, C.Fractionals.Count);
             
-            Assert.AreEqual(0.75f, A.Fractionals[0], Double.Epsilon);
-            Assert.AreEqual(1.00f, A.Fractionals[1], Double.Epsilon);
-            Assert.AreEqual(0.50f, B.Fractionals[0], Double.Epsilon);
-            Assert.AreEqual(1.00f, B.Fractionals[1], Double.Epsilon);
-            Assert.AreEqual(0.25f, C.Fractionals[0], Double.Epsilon);
+            Assert.AreEqual(0.75f, A.Fractionals[0], float.Epsilon);
+            Assert.AreEqual(1.00f, A.Fractionals[1], float.Epsilon);
+            Assert.AreEqual(0.50f, B.Fractionals[0], float.Epsilon);
+            Assert.AreEqual(1.00f, B.Fractionals[1], float.Epsilon);
+            Assert.AreEqual(0.25f, C.Fractionals[0], float.Epsilon);
         }
 
         [Test]
@@ -155,14 +155,14 @@ namespace Assets.Editor
             Assert.AreEqual(2, B.Fractionals.Count);
             Assert.AreEqual(2, C.Fractionals.Count);
 
-            Assert.AreEqual(0.75f, A.Fractionals[0], Double.Epsilon);
-            Assert.AreEqual(1.00f, A.Fractionals[1], Double.Epsilon);
-            Assert.AreEqual(0.50f, B.Fractionals[0], Double.Epsilon);
-            Assert.AreEqual(1.00f, B.Fractionals[1], Double.Epsilon);
-            Assert.AreEqual(0.25f, C.Fractionals[0], Double.Epsilon);
-            Assert.AreEqual(1.00f, C.Fractionals[1], Double.Epsilon);
-            Assert.AreEqual(0.00f, A.Fractionals[2], Double.Epsilon);
-            Assert.AreEqual(0.75f, A.Fractionals[3], Double.Epsilon);
+            Assert.AreEqual(0.75f, A.Fractionals[0], float.Epsilon);
+            Assert.AreEqual(1.00f, A.Fractionals[1], float.Epsilon);
+            Assert.AreEqual(0.50f, B.Fractionals[0], float.Epsilon);
+            Assert.AreEqual(1.00f, B.Fractionals[1], float.Epsilon);
+            Assert.AreEqual(0.25f, C.Fractionals[0], float.Epsilon);
+            Assert.AreEqual(1.00f, C.Fractionals[1], float.Epsilon);
+            Assert.AreEqual(0.00f, A.Fractionals[2], float.Epsilon);
+            Assert.AreEqual(0.75f, A.Fractionals[3], float.Epsilon);
         }
 
         [Test]
@@ -187,16 +187,16 @@ namespace Assets.Editor
             Assert.AreEqual(2, B.Fractionals.Count);
             Assert.AreEqual(2, C.Fractionals.Count);
 
-            Assert.AreEqual(0.75f, A.Fractionals[0], Double.Epsilon);
-            Assert.AreEqual(1.00f, A.Fractionals[1], Double.Epsilon);
-            Assert.AreEqual(1.00f, B.Fractionals[0], Double.Epsilon);
-            Assert.AreEqual(1.00f, C.Fractionals[0], Double.Epsilon);
+            Assert.AreEqual(0.75f, A.Fractionals[0], float.Epsilon);
+            Assert.AreEqual(1.00f, A.Fractionals[1], float.Epsilon);
+            Assert.AreEqual(1.00f, B.Fractionals[0], float.Epsilon);
+            Assert.AreEqual(1.00f, C.Fractionals[0], float.Epsilon);
 
-            Assert.AreEqual(1.00f, A.Fractionals[2], Double.Epsilon);
-            Assert.AreEqual(1.00f, B.Fractionals[1], Double.Epsilon);
-            Assert.AreEqual(1.00f, C.Fractionals[1], Double.Epsilon);
+            Assert.AreEqual(1.00f, A.Fractionals[2], float.Epsilon);
+            Assert.AreEqual(1.00f, B.Fractionals[1], float.Epsilon);
+            Assert.AreEqual(1.00f, C.Fractionals[1], float.Epsilon);
 
-            Assert.AreEqual(0.75f, A.Fractionals[3], Double.Epsilon);
+            Assert.AreEqual(0.75f, A.Fractionals[3], float.Epsilon);
         }
     }
 
