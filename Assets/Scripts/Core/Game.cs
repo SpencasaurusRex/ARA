@@ -50,7 +50,7 @@ namespace Assets.Scripts.Core
         void Setup()
         {
             Robot(Vector3Int.zero, new Vector3Int(0, 0, 1));
-            Robot(new Vector3Int(0, 0, 20), new Vector3Int(0, 0, -1));
+            Robot(new Vector3Int(0, 0, 19), new Vector3Int(0, 0, -1));
         }
 
         Entity Robot(Vector3Int initialPosition, Vector3Int direction)

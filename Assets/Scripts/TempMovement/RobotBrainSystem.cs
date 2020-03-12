@@ -19,7 +19,6 @@ namespace Assets.Scripts.Movement
 
         public void Update(float fractional)
         {
-            Debug.Log("RobotBrain: " + fractional);
             if (1.0 - fractional > float.Epsilon) return;
 
             foreach (var entity in translationSet.GetEntities())
