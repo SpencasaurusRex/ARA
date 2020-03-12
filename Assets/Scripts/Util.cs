@@ -24,8 +24,11 @@ namespace ARACore
         TurnRight
     }
 
-    public class Util
+    public static class Util
     {
+        public static Vector3 ToVector3(this Vector3Int v) => new Vector3(v.x, v.y, v.z);
+        public static Vector3Int Round(this Vector3 v) => Vector3Int.RoundToInt(v);
+        public static Vector3 Translation(this Matrix4x4 mat) => new Vector3(mat.m03, mat.m13, mat.m23);
         public static Quaternion ToQuaternion(int h)
         {
             return Quaternion.AngleAxis(-90 * h, Vector3.up);

@@ -6,7 +6,7 @@ namespace ARACore
 {
     public class UpdateManager
     {
-        public const float TickLength = 0.5f;
+        public const float TickLength = 0.25f;
         
         readonly List<IUpdateSystem> updateSystems = new List<IUpdateSystem>();
         float progress;
@@ -18,7 +18,7 @@ namespace ARACore
             updateSystems.AddRange(system);
         }
 
-        public void Update(float deltaTime)
+        public float Update(float deltaTime)
         {
             lastProgress = progress;
             progress += deltaTime / TickLength;
@@ -38,6 +38,8 @@ namespace ARACore
                 progress--;
                 UpdateSystems();
             }
+
+            return progress;
         }
 
         void AdvanceTick()

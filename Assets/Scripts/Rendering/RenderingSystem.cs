@@ -1,4 +1,7 @@
-﻿using DefaultEcs;
+﻿using System.Collections.Generic;
+using ARACore;
+using Assets.Scripts.Transform;
+using DefaultEcs;
 using UnityEngine;
 
 namespace Assets.Scripts.Rendering
@@ -8,19 +11,39 @@ namespace Assets.Scripts.Rendering
         World world;
         EntitySet meshSet;
 
+        #if UNITY_EDITOR
+        public List<GizmoRender> GizmoRenderList = new List<GizmoRender>();
+
+        public class GizmoRender
+        {
+            public Mesh Mesh;
+            public Vector3 Translation;
+            public Quaternion Quaternion;
+            public Vector3 Scale;
+        }
+        #endif
+
         public RenderingSystem(World world)
         {
             this.world = world;
-            meshSet = world.GetEntities().With<Mesh>().With<Material>().AsSet();
+            meshSet = world.GetEntities().With<Mesh>().With<Material>().With<LocalToWorld>().AsSet();
         }
 
         public void Update()
         {
-            foreach (var meshEntity in meshSet.GetEntities())
+            #if UNITY_EDITOR
+            GizmoRenderList.Clear();
+            #endif
+            foreach (var entity in meshSet.GetEntities())
             {
-                var mesh = meshEntity.Get<Mesh>();
-                var material = meshEntity.Get<Material>();
-                Graphics.DrawMesh(mesh, Matrix4x4.identity, material, 0, Camera.main);
+                var mesh = entity.Get<Mesh>();
+                var material = entity.Get<Material>();
+                var transform = entity.Get<LocalToWorld>().Matrix;
+                Graphics.DrawMesh(mesh, transform, material, 0, Camera.main);
+                
+                #if UNITY_EDITOR
+                GizmoRenderList.Add(new GizmoRender { Mesh = mesh, Translation = transform.Translation(), Quaternion = Quaternion.identity, Scale = Vector3.one});
+                #endif
             }
         }
     }

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Assets.Scripts.Chunk;
 using Assets.Scripts.Core;
 using DefaultEcs;
 using UnityEngine;
@@ -15,7 +17,7 @@ namespace Assets.Scripts.Movement
 
         readonly EntitySet movementRequestSet;
 
-        static readonly Vector3Int[] Directions = new[] {new Vector3Int(1, 0, 0), new Vector3Int(-1, 0, 0), new Vector3Int(0, 0, -1), new Vector3Int(0, 0, 1), new Vector3Int(0, 1, 0), new Vector3Int(0, -1, 0), };
+        static readonly Vector3Int[] Directions = {new Vector3Int(1, 0, 0), new Vector3Int(-1, 0, 0), new Vector3Int(0, 0, -1), new Vector3Int(0, 0, 1), new Vector3Int(0, 1, 0), new Vector3Int(0, -1, 0), };
 
         public MovementUpdateSystem(World world)
         {
@@ -27,7 +29,7 @@ namespace Assets.Scripts.Movement
         public void Update(float fractional)
         {
             // Only process if we're at the end of the frame
-            if (fractional - 1f > float.Epsilon) return;
+            if (Math.Abs(fractional - 1f) > float.Epsilon) return;
 
             var movementRequestEntities = movementRequestSet.GetEntities();
             foreach (var entity in movementRequestEntities)
@@ -50,6 +52,9 @@ namespace Assets.Scripts.Movement
         {
             CheckMovements();
             WriteResults();
+            requestedMovements.Clear();
+            movementFromLookup.Clear();
+            movementDependency.Clear();
         }
 
         void CheckMovements()
@@ -103,11 +108,40 @@ namespace Assets.Scripts.Movement
         {
             foreach (var movement in requestedMovements)
             {
+                movement.Entity.Remove<MovementRequest>();
+
                 var result = new MovementResult
                 {
                     Result = !movement.Blocked
                 };
                 movement.Entity.Set(result);
+
+                if (!movement.Blocked)
+                {
+                    movement.Entity.Set(new GridPosition { Value = movement.Destination });
+                }
+
+                // TODO improve
+                Movement movementComp;
+                if (movement.Entity.Has<Movement>())
+                {
+                    if (movement.Blocked)
+                    {
+                        movement.Entity.Remove<Movement>();
+                        continue;
+                    }
+                    movementComp = movement.Entity.Get<Movement>();
+                }
+                else if (!movement.Blocked)
+                {
+                    movement.Entity.Set(movement);
+                    movementComp = movement;
+                }
+                else continue;
+
+                movementComp.Start = movement.Start;
+                movementComp.Destination = movement.Destination;
+                movementComp.Direction = movement.Direction;
             }
         }
 
