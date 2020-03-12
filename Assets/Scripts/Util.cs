@@ -74,17 +74,4 @@ namespace ARACore
         // H: ENWS
         // D: ENWSUD
     }
-
-    public class Vector3IntEqualityComparer : IEqualityComparer<Vector3Int>
-    {
-        public bool Equals(Vector3Int a, Vector3Int b)
-        {
-            return a.x == b.x && a.y == b.y && a.z == b.z;
-        }
-
-        public int GetHashCode(Vector3Int obj)
-        {
-            return obj.GetHashCode();
-        }
-    }
 }

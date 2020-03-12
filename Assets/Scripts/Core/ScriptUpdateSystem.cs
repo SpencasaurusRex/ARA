@@ -7,7 +7,7 @@
 
         }
 
-        public void AdvanceTick()
+        public void EndTick()
         {
             
         }

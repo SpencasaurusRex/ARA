@@ -1,59 +1,32 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
-using System;
 
-namespace ARACore
+namespace Assets.Scripts.Chunk
 {
     public struct ChunkCoords : IEquatable<ChunkCoords>
     {
-        public const int CHUNK_SHIFT_X = 4; // 2^4 = 16
-        public const int CHUNK_SHIFT_Y = 4;
-        public const int CHUNK_SHIFT_Z = 4;
+        readonly Vector3Int coords;
 
-        public Int64 cx;
-        public Int64 cy;
-        public Int64 cz;
-
-        public ChunkCoords(Int64 cx, Int64 cy, Int64 cz)
+        public ChunkCoords(Vector3Int coords)
         {
-            this.cx = cx;
-            this.cy = cy;
-            this.cz = cz;
+            this.coords = coords;
         }
 
-        static Int64 Expand(Int64 w)
+        public static ChunkCoords FromBlockCoords(Vector3Int block)
         {
-            w &= 0x3ff;
-            w = (w | (w << 16)) & 4278190335;
-            w = (w | (w << 8)) & 251719695;
-            w = (w | (w << 4)) & 3272356035;
-            w = (w | (w << 2)) & 1227133513;
-            return w;
+            var chunkCoords = new Vector3Int
+            (
+                block.x << Chunk.ChunkBits,
+                block.y << Chunk.ChunkBits,
+                block.z << Chunk.ChunkBits
+            );
+            return new ChunkCoords(chunkCoords);
         }
 
-        public static ChunkCoords FromBlockCoords(Int64 gx, Int64 gy, Int64 gz)
-        {
-            return new ChunkCoords(gx >> CHUNK_SHIFT_X, gy >> CHUNK_SHIFT_Y, gz >> CHUNK_SHIFT_Z);
-        }
+        public override int GetHashCode() => coords.GetHashCode();
 
-        public override int GetHashCode()
-        {
-            return (Expand(cx) + (Expand(cy) << 1) + (Expand(cz) << 2)).GetHashCode();
-        }
+        public override bool Equals(object obj) => obj is ChunkCoords other && Equals(other);
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null || !(obj is ChunkCoords))
-            {
-                return false;
-            }
-            return Equals(obj);
-        }
-
-        public bool Equals(ChunkCoords other)
-        {
-            return this.cx == other.cx && this.cy == other.cy && this.cz == other.cz;
-        }
+        public bool Equals(ChunkCoords other) => coords == other.coords;
     }
 }

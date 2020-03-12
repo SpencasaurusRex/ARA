@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 
-namespace ARACore
+namespace Assets.Scripts.Chunk
 {
     class BlockProperties
     {
-        static Properties[] blockProperties = new Properties[Enum.GetNames(typeof(BlockType)).Length];
+        static Properties[] blockProperties = new Properties[Enum.GetNames(typeof(Block)).Length];
         static Dictionary<string, int> textureIndices = new Dictionary<string, int>();
         static int currentUVTile;
 
-        public static Properties Get(BlockType type)
+        public static Properties Get(Block type)
         {
             return blockProperties[(int)type];
         }
@@ -28,7 +28,7 @@ namespace ARACore
             string json = System.IO.File.ReadAllText(@"C:\Projects\ARA\Assets\Config\blockProperties.json");
             var blockInfo = JsonConvert.DeserializeObject<Dictionary<string, JsonBlockProperties>>(json);
 
-            foreach (var typeName in Enum.GetNames(typeof(BlockType)))
+            foreach (var typeName in Enum.GetNames(typeof(Block)))
             {
                 var lowerCaseType = typeName.Substring(0, 1).ToLower() + typeName.Substring(1, typeName.Length - 1);
                 JsonBlockProperties jsonProps;
@@ -134,7 +134,7 @@ namespace ARACore
                         }
                     }
                     #endregion Mesh generation
-                    blockProperties[(int)Enum.Parse(typeof(BlockType), typeName)] = properties;
+                    blockProperties[(int)Enum.Parse(typeof(Block), typeName)] = properties;
                 }
             }
         }
@@ -146,7 +146,7 @@ namespace ARACore
             {
                 return index;
             }
-            else return textureIndices[fileLocation] = currentUVTile++;
+            return textureIndices[fileLocation] = currentUVTile++;
         }
 
         public static Vector2[] GetUVs(int uvTileIndex)

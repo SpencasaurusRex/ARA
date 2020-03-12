@@ -44,7 +44,7 @@ namespace ARACore
         {
             foreach (var system in updateSystems)
             {
-                system.AdvanceTick();
+                system.EndTick();
             }
         }
 

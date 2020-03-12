@@ -1,5 +1,4 @@
-﻿using Assets.Scripts.Core;
-using Assets.Scripts.Movement;
+﻿using Assets.Scripts.Movement;
 using DefaultEcs;
 using NUnit.Framework;
 using UnityEngine;
@@ -16,6 +15,7 @@ namespace Assets.Editor
             entity.Set(new MovementRequest(new Vector3Int(0, 0, 0), new Vector3Int(0, 0, 1)));
 
             system.Update(1);
+            system.EndTick();
 
             var result = entity.Get<MovementResult>().Result;
 
@@ -32,6 +32,7 @@ namespace Assets.Editor
             B.Set(new MovementRequest(new Vector3Int(0, 0, 2), new Vector3Int(0, 0, 1)));
 
             system.Update(1);
+            system.EndTick();
 
             var resultA = A.Get<MovementResult>().Result;
             var resultB = B.Get<MovementResult>().Result;
@@ -50,6 +51,7 @@ namespace Assets.Editor
             B.Set(new MovementRequest(new Vector3Int(0, 0, 1), new Vector3Int(0, 0, 2)));
 
             system.Update(1);
+            system.EndTick();
 
             var resultA = A.Get<MovementResult>().Result;
             var resultB = B.Get<MovementResult>().Result;
@@ -68,12 +70,13 @@ namespace Assets.Editor
             B.Set(new MovementRequest(new Vector3Int(0, 0, 1), new Vector3Int(1, 0, 0)));
 
             system.Update(1);
+            system.EndTick();
 
             var resultA = A.Get<MovementResult>().Result;
             var resultB = B.Get<MovementResult>().Result;
 
             Assert.AreEqual(false, resultA);
-            Assert.AreEqual(false, resultB);
+            Assert.AreEqual(true, resultB);
         }
 
         static (World, MovementUpdateSystem) Setup()

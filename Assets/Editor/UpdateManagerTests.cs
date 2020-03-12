@@ -210,7 +210,7 @@ namespace Assets.Editor
             Fractionals.Add(fractional);
         }
 
-        public void AdvanceTick()
+        public void EndTick()
         {
             AdvanceTickCalls++;
         }
