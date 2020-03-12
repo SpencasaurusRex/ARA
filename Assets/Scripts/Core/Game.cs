@@ -16,6 +16,7 @@ namespace Assets.Scripts.Core
         RenderingSystem renderingSystem;
         TransformWriteSystem transformWriteSystem;
         MovementSlideSystem movementSlideSystem;
+        SetBlockSystem setBlockSystem;
 
         public Material material;
         public Mesh mesh;
@@ -29,7 +30,8 @@ namespace Assets.Scripts.Core
                 new TileEntityUpdateSystem(),
                 new RobotBrainSystem(world),
                 new ScriptUpdateSystem(),
-                new MovementUpdateSystem(world)
+                new MovementUpdateSystem(world),
+                setBlockSystem = new SetBlockSystem(world)
             );
 
             renderingSystem = new RenderingSystem(world);
@@ -37,6 +39,8 @@ namespace Assets.Scripts.Core
             movementSlideSystem = new MovementSlideSystem(world);
 
             Setup();
+
+            setBlockSystem.EndTick();
         }
 
         void Update()
@@ -51,12 +55,13 @@ namespace Assets.Scripts.Core
         {
             var global = world.CreateEntity();
             global.Set(new Global());
+            global.Set(new ChunkSet());
 
-            for (int x = 0; x < 10; x++)
+            for (int x = 0; x < 15; x++)
             {
-                for (int y = 0; y < 10; y++)
+                for (int y = 0; y < 15; y++)
                 {
-                    for (int z = 0; z < 10; z++)
+                    for (int z = 0; z < 15; z++)
                     {
                         Robot(new Vector3Int(x, y, z));
                     }
@@ -74,6 +79,7 @@ namespace Assets.Scripts.Core
             entity.Set(new Translation { Value = initialPosition });
             entity.Set(new Rotation());
             entity.Set(new GridPosition { Value = initialPosition});
+            entity.Set(new SetBlock {Block = Block.Robot});
             entity.Set(new Scale { Value = new Vector3(.9f, .9f, .9f)});
             entity.Set(new ID {Value = id++});
 

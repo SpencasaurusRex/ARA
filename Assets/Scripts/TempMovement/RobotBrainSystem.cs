@@ -26,16 +26,22 @@ namespace Assets.Scripts.Movement
                 var currentPosition = entity.Get<GridPosition>().Value;
 
                 int id = entity.Get<ID>().Value;
-                var targetX = Mathf.FloorToInt(id / 6) + id % 6 + 12;
-                var targetZ = Mathf.FloorToInt(id / 6) + 12;
+                var targetX = Mathf.FloorToInt(id / 15) + id % 15 + 12;
+                var targetZ = Mathf.FloorToInt(id / 15) + 12;
                 var targetY = 0;
 
                 var calculatedDirection = Vector3Int.zero;
-                if (currentPosition.x != targetX)
+                var r = Random.Range(0f, 1f);
+
+                if (entity.Has<MovementResult>() && entity.Get<MovementResult>().Result == false && r < 0.5f)
+                {
+                    calculatedDirection.y = 1;
+                }
+                else if (currentPosition.x != targetX && r < 0.7f)
                 {
                     calculatedDirection.x = (int)Mathf.Sign(targetX - currentPosition.x);
                 }
-                else if (currentPosition.z != targetZ)
+                else if (currentPosition.z != targetZ && r < 0.9f)
                 {
                     calculatedDirection.z = (int) Mathf.Sign(targetZ - currentPosition.z);
                 }
@@ -45,7 +51,6 @@ namespace Assets.Scripts.Movement
                 }
                 else continue;
 
-                //Debug.Log($"Requesting movement from {currentPosition} to {currentPosition + calculatedDirection}");
                 entity.Set(new MovementRequest(currentPosition, currentPosition + calculatedDirection));
             }
 

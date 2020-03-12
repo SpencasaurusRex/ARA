@@ -15,6 +15,7 @@ namespace Assets.Scripts.Movement
         readonly Dictionary<Vector3Int, Movement> movementFromLookup = new Dictionary<Vector3Int, Movement>();
         readonly Dictionary<Vector3Int, Vector3Int> movementDependency = new Dictionary<Vector3Int, Vector3Int>();
 
+        readonly EntitySet globalSet;
         readonly EntitySet movementRequestSet;
         readonly EntitySet doneMovingSet;
 
@@ -29,6 +30,7 @@ namespace Assets.Scripts.Movement
 
             movementRequestSet = world.GetEntities().With<MovementRequest>().AsSet();
             doneMovingSet = world.GetEntities().With<Movement>().Without<MovementResult>().AsSet();
+            globalSet = world.GetEntities().With<Global>().AsSet();
         }
 
         public void Update(float fractional)
@@ -70,9 +72,10 @@ namespace Assets.Scripts.Movement
 
         void CheckMovements()
         {
+            var chunkSet = globalSet.GetEntities()[0].Get<ChunkSet>();
+
             foreach (var movement in requestedMovements)
             {
-                // TODO: Check for world collisions
                 if (movementFromLookup.TryGetValue(movement.Destination, out var obstacle))
                 {
                     // If there is a mover in the way, and it's not moving in the same direction: block
@@ -90,6 +93,10 @@ namespace Assets.Scripts.Movement
                         // Record dependency
                         movementDependency.Add(movement.Start, movement.Destination);
                     }
+                }
+                else if (chunkSet.GetBlock(movement.Destination) != Block.Air)
+                {
+                    BlockMovement(movement);
                 }
                 else
                 {
@@ -130,6 +137,8 @@ namespace Assets.Scripts.Movement
                 if (!movement.Blocked)
                 {
                     movement.Entity.Set(new GridPosition { Value = movement.Destination });
+                    movement.Entity.Set(new SetBlock{ Block = Block.Robot });
+                    movement.Entity.Set(new RemoveBlock { Coords = movement.Start });
                 }
 
                 // TODO improve
