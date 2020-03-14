@@ -68,13 +68,30 @@ namespace Assets.Scripts.Core
             var chunk = World.CreateEntity();
             chunkSet.GetBlock(Vector3Int.zero);
             chunkSet.GetChunkEntity(new ChunkCoords(Vector3Int.zero)).Set(new GenerateMesh());
-            chunkSet.SetBlock(Vector3Int.zero, Block.Dirt);
-            chunkSet.SetBlock(new Vector3Int(1, 0, 0), Block.Dirt);
 
-            //for (int z = 0; z < 15; z++)
-            //for (int x = 0; x < 15; x++)
-            //for (int y = 1; y < 15; y++)
-            //    Robot(new Vector3Int(x, y, z));
+            for (int x = 0; x < 10; x++)
+            for (int y = 1; y < 10; y++)
+            for (int z = 0; z < 10; z++)
+                Robot(new Vector3Int(x, y, z));
+
+            for (int x = -Chunk.Chunk.ChunkSize * 4; x < Chunk.Chunk.ChunkSize * 4; x++)
+            {
+                for (int z = -Chunk.Chunk.ChunkSize * 4; z < Chunk.Chunk.ChunkSize * 4; z++)
+                {
+                    for (int y = -Chunk.Chunk.ChunkSize; y < 0; y++)
+                    {
+                        if (y == -1)
+                        {
+                            chunkSet.SetBlock(new Vector3Int(x, y, z), Block.Grass);
+                        }
+                        else
+                        {
+                            chunkSet.SetBlock(new Vector3Int(x, y, z), Block.Dirt);
+                        }
+                    }
+                }
+            }
+
         }
 
         static int id;

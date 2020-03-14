@@ -14,8 +14,6 @@ namespace Assets.Scripts.Chunk
         ChunkSet chunkSet;
         BlockProperties properties;
 
-        Vector3 chunkLocation;
-
         public ChunkMeshGenerationSystem(World world, Material material)
         {
             this.world = world;
@@ -57,13 +55,18 @@ namespace Assets.Scripts.Chunk
                             if (!properties.Values[type].GenerateMesh) continue;
 
                             Vector3 position = new Vector3(x, y, z);
-                            // TODO: Check for blocks across chunks, but only if the chunk is rendered!
-                            if (properties.Values[chunkSet.GetBlock(new Vector3Int(x + 1, y + 0, z + 0))].Transparent) CreateQuad(position, type, BlockSide.East, vertices, triangles, uvs, normals);
-                            if (properties.Values[chunkSet.GetBlock(new Vector3Int(x + 0, y + 0, z + 1))].Transparent) CreateQuad(position, type, BlockSide.North, vertices, triangles, uvs, normals);
-                            if (properties.Values[chunkSet.GetBlock(new Vector3Int(x - 1, y + 0, z + 0))].Transparent) CreateQuad(position, type, BlockSide.West, vertices, triangles, uvs, normals);
-                            if (properties.Values[chunkSet.GetBlock(new Vector3Int(x + 0, y + 0, z - 1))].Transparent) CreateQuad(position, type, BlockSide.South, vertices, triangles, uvs, normals);
-                            if (properties.Values[chunkSet.GetBlock(new Vector3Int(x + 0, y + 1, z + 0))].Transparent) CreateQuad(position, type, BlockSide.Top, vertices, triangles, uvs, normals);
-                            if (properties.Values[chunkSet.GetBlock(new Vector3Int(x + 0, y - 1, z + 0))].Transparent) CreateQuad(position, type, BlockSide.Bottom, vertices, triangles, uvs, normals);
+                            if (properties.Values[chunkSet.GetBlock(new Vector3Int(x + 1, y + 0, z + 0))].Transparent) 
+                                CreateQuad(position, type, BlockSide.East, vertices, triangles, uvs, normals);
+                            if (properties.Values[chunkSet.GetBlock(new Vector3Int(x + 0, y + 0, z + 1))].Transparent) 
+                                CreateQuad(position, type, BlockSide.North, vertices, triangles, uvs, normals);
+                            if (properties.Values[chunkSet.GetBlock(new Vector3Int(x - 1, y + 0, z + 0))].Transparent) 
+                                CreateQuad(position, type, BlockSide.West, vertices, triangles, uvs, normals);
+                            if (properties.Values[chunkSet.GetBlock(new Vector3Int(x + 0, y + 0, z - 1))].Transparent) 
+                                CreateQuad(position, type, BlockSide.South, vertices, triangles, uvs, normals);
+                            if (properties.Values[chunkSet.GetBlock(new Vector3Int(x + 0, y + 1, z + 0))].Transparent) 
+                                CreateQuad(position, type, BlockSide.Top, vertices, triangles, uvs, normals);
+                            if (properties.Values[chunkSet.GetBlock(new Vector3Int(x + 0, y - 1, z + 0))].Transparent) 
+                                CreateQuad(position, type, BlockSide.Bottom, vertices, triangles, uvs, normals);
                         }
                     }
                 }
@@ -74,10 +77,12 @@ namespace Assets.Scripts.Chunk
                     triangles = triangles.ToArray(),
                     uv = uvs.ToArray()
                 };
+                mesh.RecalculateNormals();
                 mesh.RecalculateBounds();
 
                 entity.Set(mesh);
                 entity.Set(material);
+                entity.Remove<GenerateMesh>();
             }
         }
 
@@ -141,7 +146,7 @@ namespace Assets.Scripts.Chunk
             int y = uvTileIndex / CANVAS_SIZE;
             float v = y * BLOCK_SIZE;
 
-            float e = 0f;
+            float e = 0.00f;
 
             Vector2 uv00 = new Vector2(u + e, v + e);
             Vector2 uv10 = new Vector2(u + BLOCK_SIZE - e, v + e);

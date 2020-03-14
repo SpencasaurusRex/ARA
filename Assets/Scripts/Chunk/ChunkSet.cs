@@ -30,10 +30,14 @@ namespace Assets.Scripts.Chunk
             GetChunk(coord).SetBlock(coord, b);
             
             if (!properties.Values[b].GenerateMesh) return;
-            var entity = GetChunkEntity(new ChunkCoords(coord));
+            var cc = new ChunkCoords(coord);
+            var entity = GetChunkEntity(cc);
             if (!entity.Has<GenerateMesh>())
             {
-                entity.Set<GenerateMesh>();
+                entity.Set(new GenerateMesh
+                {
+                    Coords = cc
+                });
             }
         }
 

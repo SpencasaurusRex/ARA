@@ -14,7 +14,7 @@ namespace Assets.Scripts.Rendering
         {
             this.world = world;
             meshSet = world.GetEntities().With<Mesh>().With<Material>().With<LocalToWorld>().AsSet();
-            chunkSet = world.GetEntities().With<Mesh>().With<Material>().With<Chunk.Chunk>().AsSet();
+            chunkSet = world.GetEntities().With<Mesh>().With<Material>().Without<LocalToWorld>().AsSet();
         }
 
         public void Update()
@@ -32,9 +32,8 @@ namespace Assets.Scripts.Rendering
             {
                 var mesh = entity.Get<Mesh>();
                 var material = entity.Get<Material>();
-                var chunk = entity.Get<Chunk.Chunk>();
 
-                Render(mesh, material, Matrix4x4.Translate(chunk.Coord.ToBlockCoords()));
+                Render(mesh, material, Matrix4x4.identity);
             }
         }
 

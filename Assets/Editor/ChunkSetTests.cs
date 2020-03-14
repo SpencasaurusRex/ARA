@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using Assets.Scripts.Chunk;
+﻿using Assets.Scripts.Chunk;
 using DefaultEcs;
 using NUnit.Framework;
 using UnityEngine;
@@ -94,7 +93,6 @@ namespace Assets.Editor
             Assert.AreEqual(2, coord.X);
             Assert.AreEqual(-1, coord.Y);
             Assert.AreEqual(-2, coord.Z);
-
         }
 
         static (World, ChunkSet) Setup()
