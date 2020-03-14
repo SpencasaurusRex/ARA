@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.Chunk;
+﻿using System.Management.Instrumentation;
+using Assets.Scripts.Chunk;
 using Assets.Scripts.Core;
 using Assets.Scripts.Movement;
 using DefaultEcs;
@@ -139,9 +140,10 @@ namespace Assets.Editor
         static (World, MovementUpdateSystem, ChunkSet) Setup()
         {
             World world = new World();
+            BlockProperties blockProperties = new BlockProperties();
             MovementUpdateSystem system = new MovementUpdateSystem(world);
 
-            var chunkSet = new ChunkSet();
+            var chunkSet = new ChunkSet(world, blockProperties);
             var global = world.CreateEntity();
             global.Set(new Global());
             global.Set(chunkSet);

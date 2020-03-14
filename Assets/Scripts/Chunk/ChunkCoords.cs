@@ -7,21 +7,21 @@ namespace Assets.Scripts.Chunk
     {
         readonly Vector3Int coords;
 
-        public ChunkCoords(Vector3Int coords)
+        public int X => coords.x;
+        public int Y => coords.y;
+        public int Z => coords.z;
+
+        public ChunkCoords(Vector3Int blockCoords)
         {
-            this.coords = coords;
+            coords = new Vector3Int
+            (
+                blockCoords.x >> Chunk.ChunkBits,
+                blockCoords.y >> Chunk.ChunkBits,
+                blockCoords.z >> Chunk.ChunkBits
+            );
         }
 
-        public static ChunkCoords FromBlockCoords(Vector3Int block)
-        {
-            var chunkCoords = new Vector3Int
-            (
-                block.x << Chunk.ChunkBits,
-                block.y << Chunk.ChunkBits,
-                block.z << Chunk.ChunkBits
-            );
-            return new ChunkCoords(chunkCoords);
-        }
+        public Vector3Int ToBlockCoords() => coords * Chunk.ChunkSize;
 
         public override int GetHashCode() => coords.GetHashCode();
 

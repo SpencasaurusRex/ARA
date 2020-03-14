@@ -11,32 +11,35 @@ namespace Assets.Scripts.Core
 {
     public class Game : MonoBehaviour
     {
-        World world;
+        public static World World;
         UpdateManager updateManager;
         RenderingSystem renderingSystem;
         TransformWriteSystem transformWriteSystem;
         MovementSlideSystem movementSlideSystem;
         SetBlockSystem setBlockSystem;
+        ChunkMeshGenerationSystem chunkMeshGenerationSystem;
 
-        public Material material;
-        public Mesh mesh;
+        public Material robotMaterial;
+        public Mesh robotMesh;
+        public Material chunkMaterial;
 
         void Start()
         {
-            world = new World();
+            World = new World();
 
             updateManager = new UpdateManager
             (
                 new TileEntityUpdateSystem(),
-                new RobotBrainSystem(world),
+                new RobotBrainSystem(World),
                 new ScriptUpdateSystem(),
-                new MovementUpdateSystem(world),
-                setBlockSystem = new SetBlockSystem(world)
+                new MovementUpdateSystem(World),
+                setBlockSystem = new SetBlockSystem(World)
             );
 
-            renderingSystem = new RenderingSystem(world);
-            transformWriteSystem = new TransformWriteSystem(world);
-            movementSlideSystem = new MovementSlideSystem(world);
+            movementSlideSystem = new MovementSlideSystem(World);
+            chunkMeshGenerationSystem = new ChunkMeshGenerationSystem(World, chunkMaterial);
+            transformWriteSystem = new TransformWriteSystem(World);
+            renderingSystem = new RenderingSystem(World);
 
             Setup();
 
@@ -47,34 +50,39 @@ namespace Assets.Scripts.Core
         {
             float fractional = updateManager.Update(Time.deltaTime);
             movementSlideSystem.Update(fractional);
+            chunkMeshGenerationSystem.Update();
             transformWriteSystem.Update();
             renderingSystem.Update();
         }
 
         void Setup()
         {
-            var global = world.CreateEntity();
+            var props = new BlockProperties();
+            
+            var global = World.CreateEntity();
+            var chunkSet = new ChunkSet(World, props);
             global.Set(new Global());
-            global.Set(new ChunkSet());
+            global.Set(chunkSet);
+            global.Set(props);
 
-            for (int x = 0; x < 15; x++)
-            {
-                for (int y = 0; y < 15; y++)
-                {
-                    for (int z = 0; z < 15; z++)
-                    {
-                        Robot(new Vector3Int(x, y, z));
-                    }
-                }
-            }
+            var chunk = World.CreateEntity();
+            chunkSet.GetBlock(Vector3Int.zero);
+            chunkSet.GetChunkEntity(new ChunkCoords(Vector3Int.zero)).Set(new GenerateMesh());
+            chunkSet.SetBlock(Vector3Int.zero, Block.Dirt);
+            chunkSet.SetBlock(new Vector3Int(1, 0, 0), Block.Dirt);
+
+            //for (int z = 0; z < 15; z++)
+            //for (int x = 0; x < 15; x++)
+            //for (int y = 1; y < 15; y++)
+            //    Robot(new Vector3Int(x, y, z));
         }
 
         static int id;
         Entity Robot(Vector3Int initialPosition)
         {
-            var entity = world.CreateEntity();
-            entity.Set(mesh);
-            entity.Set(material);
+            var entity = World.CreateEntity();
+            entity.Set(robotMesh);
+            entity.Set(robotMaterial);
             entity.Set(new LocalToWorld());
             entity.Set(new Translation { Value = initialPosition });
             entity.Set(new Rotation());
@@ -84,15 +92,6 @@ namespace Assets.Scripts.Core
             entity.Set(new ID {Value = id++});
 
             return entity;
-        }
-
-        void OnDrawGizmos()
-        {
-            if (renderingSystem?.GizmoRenderList == null) return;
-            foreach (var gizmoRender in renderingSystem.GizmoRenderList)
-            {
-                Gizmos.DrawMesh(gizmoRender.Mesh, gizmoRender.Translation, gizmoRender.Quaternion, gizmoRender.Scale);
-            }
         }
     }
 }

@@ -13,17 +13,20 @@ namespace Assets.Scripts.Chunk
 
         public Dictionary<int, Entity> TileEntities;
         public Block[] Blocks;
+        public ChunkCoords Coord;
 
-        public Chunk(Block[] blocks, Dictionary<int, Entity> tileEntities)
+        public Chunk(ChunkCoords coord, Block[] blocks, Dictionary<int, Entity> tileEntities)
         {
             Blocks = blocks;
             TileEntities = tileEntities;
+            Coord = coord;
         }
 
-        public Chunk()
+        public Chunk(ChunkCoords coord)
         {
             Blocks = new Block[NumBlocks];
             TileEntities = new Dictionary<int, Entity>();
+            Coord = coord;
         }
 
         public Block GetBlock(Vector3Int global)

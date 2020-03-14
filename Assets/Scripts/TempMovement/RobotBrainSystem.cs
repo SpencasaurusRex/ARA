@@ -24,10 +24,10 @@ namespace Assets.Scripts.Movement
             foreach (var entity in translationSet.GetEntities())
             {
                 var currentPosition = entity.Get<GridPosition>().Value;
-
+                int lineWidth = 2;
                 int id = entity.Get<ID>().Value;
-                var targetX = Mathf.FloorToInt(id / 15) + id % 15 + 12;
-                var targetZ = Mathf.FloorToInt(id / 15) + 12;
+                var targetX = Mathf.FloorToInt(id / lineWidth) + id % lineWidth + 16;
+                var targetZ = Mathf.FloorToInt(id / lineWidth) + 16;
                 var targetY = 0;
 
                 var calculatedDirection = Vector3Int.zero;
@@ -37,11 +37,11 @@ namespace Assets.Scripts.Movement
                 {
                     calculatedDirection.y = 1;
                 }
-                else if (currentPosition.x != targetX && r < 0.7f)
+                else if (currentPosition.x != targetX /*&& r < 0.7f*/)
                 {
                     calculatedDirection.x = (int)Mathf.Sign(targetX - currentPosition.x);
                 }
-                else if (currentPosition.z != targetZ && r < 0.9f)
+                else if (currentPosition.z != targetZ/* && r < 0.9f*/)
                 {
                     calculatedDirection.z = (int) Mathf.Sign(targetZ - currentPosition.z);
                 }
