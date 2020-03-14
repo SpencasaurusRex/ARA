@@ -88,14 +88,14 @@ namespace Assets.Scripts.Chunk
 
         static Vector3[] Offsets = new[]
         {
-            new Vector3(0, 0, 0),
-            new Vector3(1, 0, 0),
-            new Vector3(0, 1, 0),
-            new Vector3(1, 1, 0),
-            new Vector3(0, 0, 1),
-            new Vector3(1, 0, 1),
-            new Vector3(0, 1, 1),
-            new Vector3(1, 1, 1)
+            new Vector3(-0.5f, -0.5f, -0.5f),
+            new Vector3(0.5f, -0.5f, -0.5f),
+            new Vector3(-0.5f, 0.5f, -0.5f),
+            new Vector3(0.5f, 0.5f, -0.5f),
+            new Vector3(-0.5f, -0.5f, 0.5f),
+            new Vector3(0.5f, -0.5f, 0.5f),
+            new Vector3(-0.5f, 0.5f, 0.5f),
+            new Vector3(0.5f, 0.5f, 0.5f)
         };
 
         void CreateQuad(Vector3 pos, Block type, BlockSide side, List<Vector3> vertices, List<int> triangles, List<Vector2> uvs, List<Vector3> normals)
@@ -146,7 +146,7 @@ namespace Assets.Scripts.Chunk
             int y = uvTileIndex / CANVAS_SIZE;
             float v = y * BLOCK_SIZE;
 
-            float e = 0.00f;
+            float e = 0.005f;
 
             Vector2 uv00 = new Vector2(u + e, v + e);
             Vector2 uv10 = new Vector2(u + BLOCK_SIZE - e, v + e);
