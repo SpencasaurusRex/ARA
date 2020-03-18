@@ -139,19 +139,29 @@ namespace Assets.Scripts.Chunk
 
         Vector2[] GetUVs(int uvTileIndex)
         {
-            const int CANVAS_SIZE = 4;
-            const float BLOCK_SIZE = 1f / CANVAS_SIZE;
-            int x = uvTileIndex % CANVAS_SIZE;
-            float u = x * BLOCK_SIZE;
-            int y = uvTileIndex / CANVAS_SIZE;
-            float v = y * BLOCK_SIZE;
+            const float BlockPixels = 16;
+            const int SpacingPixels = 2;
+            const int CanvasSize = 4;
+            const float CanvasPixelSize = CanvasSize * (SpacingPixels * 2 + BlockPixels);
+            const float BlockFractional = BlockPixels / CanvasPixelSize;
 
-            float e = 0.005f;
+            int x = uvTileIndex % CanvasSize;
+            float u = (SpacingPixels + x * (BlockPixels + SpacingPixels * 2)) / CanvasPixelSize;
+            int y = uvTileIndex / CanvasSize;
+            float v = (SpacingPixels + y * (BlockPixels + SpacingPixels * 2)) / CanvasPixelSize;
+
+            float e = 0;//0.5f / (BlockPixels * CanvasSize);
 
             Vector2 uv00 = new Vector2(u + e, v + e);
-            Vector2 uv10 = new Vector2(u + BLOCK_SIZE - e, v + e);
-            Vector2 uv01 = new Vector2(u + e, v + BLOCK_SIZE - e);
-            Vector2 uv11 = new Vector2(u + BLOCK_SIZE - e, v + BLOCK_SIZE - e);
+            Vector2 uv10 = new Vector2(u + BlockFractional - e, v + e);
+            Vector2 uv01 = new Vector2(u + e, v + BlockFractional - e);
+            Vector2 uv11 = new Vector2(u + BlockFractional - e, v + BlockFractional - e);
+
+            //Vector2 uv00 = new Vector2(0, 0);
+            //Vector2 uv10 = new Vector2(1, 0);
+            //Vector2 uv01 = new Vector2(0, 1);
+            //Vector2 uv11 = new Vector2(1, 1);
+
             return new Vector2[] {uv01, uv11, uv00, uv10};
         }
     }

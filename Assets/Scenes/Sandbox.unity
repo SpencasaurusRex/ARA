@@ -360,7 +360,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   robotMaterial: {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
   robotMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  chunkMaterial: {fileID: 2100000, guid: 85e652b55a6509544be139b5f3c7d7fe, type: 2}
+  chunkMaterial: {fileID: 2100000, guid: 258dbdc42b039914aaa647386a6b7b44, type: 2}
 --- !u!1 &1912400213
 GameObject:
   m_ObjectHideFlags: 0

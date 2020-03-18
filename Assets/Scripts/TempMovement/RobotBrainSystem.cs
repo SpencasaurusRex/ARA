@@ -43,11 +43,11 @@ namespace Assets.Scripts.Movement
             var targetY = 0;
 
             var calculatedDirection = Vector3Int.zero;
-            var r = 0;//Random.Range(0f, 1f);
+            var r = Random.Range(0f, 1f);
 
             if (entity.Has<MovementResult>() && entity.Get<MovementResult>().Result == false && r < 0.5f)
             {
-                calculatedDirection.y = 1;
+                //calculatedDirection.y = 1;
             }
             else if (currentPosition.x != targetX /*&& r < 0.7f*/)
             {

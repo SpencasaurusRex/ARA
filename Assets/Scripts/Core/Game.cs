@@ -69,14 +69,14 @@ namespace Assets.Scripts.Core
             chunkSet.GetBlock(Vector3Int.zero);
             chunkSet.GetChunkEntity(new ChunkCoords(Vector3Int.zero)).Set(new GenerateMesh());
 
-            for (int x = 0; x < 10; x++)
-            for (int y = 1; y < 10; y++)
-            for (int z = 0; z < 10; z++)
-                Robot(new Vector3Int(x, y, z));
+            //for (int x = 0; x < 10; x++)
+            //for (int y = 1; y < 10; y++)
+            //for (int z = 0; z < 10; z++)
+            //    Robot(new Vector3Int(x, y, z));
 
-            for (int x = -Chunk.Chunk.ChunkSize * 4; x < Chunk.Chunk.ChunkSize * 4; x++)
+            for (int x = -Chunk.Chunk.ChunkSize * 8; x < Chunk.Chunk.ChunkSize * 8; x++)
             {
-                for (int z = -Chunk.Chunk.ChunkSize * 4; z < Chunk.Chunk.ChunkSize * 4; z++)
+                for (int z = -Chunk.Chunk.ChunkSize * 8; z < Chunk.Chunk.ChunkSize * 8; z++)
                 {
                     for (int y = -Chunk.Chunk.ChunkSize; y < 0; y++)
                     {
