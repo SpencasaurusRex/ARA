@@ -55,7 +55,7 @@ namespace Assets.Scripts.Transform
                 var scale = entity.Get<Scale>();
                 var localToWorld = entity.Get<LocalToWorld>();
 
-                localToWorld.Matrix = Matrix4x4.TRS(translation.Value, Quaternion.identity, scale.Value);
+                localToWorld.Matrix = Matrix4x4.TRS(translation.Value, rotation.Value, scale.Value);
             }
         }
     }

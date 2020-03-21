@@ -29,7 +29,7 @@ namespace Assets.Scripts.Movement
             this.world = world;
 
             movementRequestSet = world.GetEntities().With<MovementRequest>().AsSet();
-            doneMovingSet = world.GetEntities().With<Movement>().Without<MovementResult>().AsSet();
+            doneMovingSet = world.GetEntities().With<Movement>().Without<ActionResult>().AsSet();
             globalSet = world.GetEntities().With<Global>().AsSet();
         }
 
@@ -128,7 +128,7 @@ namespace Assets.Scripts.Movement
             {
                 movement.Entity.Remove<MovementRequest>();
 
-                var result = new MovementResult
+                var result = new ActionResult
                 {
                     Result = !movement.Blocked
                 };

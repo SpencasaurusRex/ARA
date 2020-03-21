@@ -20,7 +20,7 @@ namespace Assets.Editor
             system.Update(1);
             system.EndTick();
 
-            var result = entity.Get<MovementResult>().Result;
+            var result = entity.Get<ActionResult>().Result;
 
             Assert.AreEqual(true, result);
         }
@@ -40,7 +40,7 @@ namespace Assets.Editor
             system.Update(1);
             system.EndTick();
 
-            var result = entity.Get<MovementResult>().Result;
+            var result = entity.Get<ActionResult>().Result;
         }
 
         [Test]
@@ -92,8 +92,8 @@ namespace Assets.Editor
             system.Update(1);
             system.EndTick();
 
-            var resultA = A.Get<MovementResult>().Result;
-            var resultB = B.Get<MovementResult>().Result;
+            var resultA = A.Get<ActionResult>().Result;
+            var resultB = B.Get<ActionResult>().Result;
 
             Assert.AreEqual(false, resultA);
             Assert.AreEqual(false, resultB);
@@ -111,8 +111,8 @@ namespace Assets.Editor
             system.Update(1);
             system.EndTick();
 
-            var resultA = A.Get<MovementResult>().Result;
-            var resultB = B.Get<MovementResult>().Result;
+            var resultA = A.Get<ActionResult>().Result;
+            var resultB = B.Get<ActionResult>().Result;
 
             Assert.AreEqual(true, resultA);
             Assert.AreEqual(true, resultB);
@@ -130,8 +130,8 @@ namespace Assets.Editor
             system.Update(1);
             system.EndTick();
 
-            var resultA = A.Get<MovementResult>().Result;
-            var resultB = B.Get<MovementResult>().Result;
+            var resultA = A.Get<ActionResult>().Result;
+            var resultB = B.Get<ActionResult>().Result;
 
             Assert.AreEqual(false, resultA);
             Assert.AreEqual(true, resultB);

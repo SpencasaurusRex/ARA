@@ -2,7 +2,8 @@
 using Assets.Scripts.Chunk;
 using Assets.Scripts.Movement;
 using Assets.Scripts.Rendering;
-using Assets.Scripts.TempMovement;
+using Assets.Scripts.Robots;
+using Assets.Scripts.Scripting;
 using Assets.Scripts.Transform;
 using Assets.Scripts.UnityComponents;
 using Boo.Lang;
@@ -22,12 +23,16 @@ namespace Assets.Scripts.Core
         ChunkMeshGenerationSystem chunkMeshGenerationSystem;
         List<UnityInitializer> initializationSystems;
         GameObjectCreationSystem gameObjectCreationSystem;
+        RobotInitSystem robotInitSystem;
+        TurnSystem turnSystem;
 
-        public Material robotMaterial;
-        public Mesh robotMesh;
-        public Material chunkMaterial;
-        public GameObject blankPrefab;
-        public Entity global;
+        public Material RobotMaterial;
+        public Mesh RobotMesh;
+        public Material ChunkMaterial;
+        public GameObject BlankPrefab;
+        public UnityEngine.Transform EntityBase;
+
+        Entity global;
 
         void Start()
         {
@@ -41,19 +46,23 @@ namespace Assets.Scripts.Core
                 new TileEntityUpdateSystem(),
                 new RobotBrainSystem(World),
                 new ScriptUpdateSystem(),
+                new CommandTranslationSystem(World),
                 new MovementUpdateSystem(World),
+                new TurnRequestSystem(World),
                 setBlockSystem = new SetBlockSystem(World)
             );
 
             movementSlideSystem = new MovementSlideSystem(World);
-            chunkMeshGenerationSystem = new ChunkMeshGenerationSystem(World, chunkMaterial);
+            chunkMeshGenerationSystem = new ChunkMeshGenerationSystem(World, ChunkMaterial);
             transformWriteSystem = new TransformWriteSystem(World);
             renderingSystem = new RenderingSystem(World);
             initializationSystems = new List<UnityInitializer>
             {
                 new MeshColliderInitializationSystem(World)
             };
-            gameObjectCreationSystem = new GameObjectCreationSystem(World, blankPrefab);
+            gameObjectCreationSystem = new GameObjectCreationSystem(World, BlankPrefab, EntityBase);
+            turnSystem = new TurnSystem(World);
+            robotInitSystem = new RobotInitSystem(World, RobotMesh, RobotMaterial);
 
             Setup();
 
@@ -64,6 +73,7 @@ namespace Assets.Scripts.Core
         {
             float fractional = updateManager.Update(Time.deltaTime);
             movementSlideSystem.Update(fractional);
+            turnSystem.Update(fractional);
             chunkMeshGenerationSystem.Update();
 
             foreach (var initializationSystem in initializationSystems)
@@ -75,6 +85,8 @@ namespace Assets.Scripts.Core
             {
                 initializationSystem.Update();
             }
+
+            robotInitSystem.Update();
 
             transformWriteSystem.Update();
             renderingSystem.Update();
@@ -98,9 +110,11 @@ namespace Assets.Scripts.Core
                     for (int z = 0; z < 10; z++)
                         Robot(new Vector3Int(x, y, z));
 
-            for (int x = -Chunk.Chunk.ChunkSize * 8; x < Chunk.Chunk.ChunkSize * 8; x++)
+            int radius = 4;
+
+            for (int x = -Chunk.Chunk.ChunkSize * radius; x < Chunk.Chunk.ChunkSize * radius; x++)
             {
-                for (int z = -Chunk.Chunk.ChunkSize * 8; z < Chunk.Chunk.ChunkSize * 8; z++)
+                for (int z = -Chunk.Chunk.ChunkSize * radius; z < Chunk.Chunk.ChunkSize * radius; z++)
                 {
                     for (int y = -Chunk.Chunk.ChunkSize; y < 0; y++)
                     {
@@ -119,20 +133,10 @@ namespace Assets.Scripts.Core
         }
 
         static int id;
-        Entity Robot(Vector3Int initialPosition)
+        void Robot(Vector3Int initialPosition)
         {
-            var entity = World.CreateEntity();
-            entity.Set(robotMesh);
-            entity.Set(robotMaterial);
-            entity.Set(new LocalToWorld());
-            entity.Set(new Translation { Value = initialPosition });
-            entity.Set(new Rotation());
-            entity.Set(new GridPosition { Value = initialPosition});
-            entity.Set(new SetBlock {Block = Block.Robot});
-            entity.Set(new Scale { Value = new Vector3(.9f, .9f, .9f)});
-            entity.Set(new ID {Value = id++});
-
-            return entity;
+            Entity entity = World.CreateEntity();
+            entity.Set(new RobotInit(initialPosition));
         }
     }
 }

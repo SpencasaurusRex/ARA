@@ -358,11 +358,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7349d16f79d73e46ac00eb05fc62af6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  robotMaterial: {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
-  robotMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  chunkMaterial: {fileID: 2100000, guid: 258dbdc42b039914aaa647386a6b7b44, type: 2}
-  blankPrefab: {fileID: 5571440867672880871, guid: d84fd9092f23c504597171f0729f89bc,
+  RobotMaterial: {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  RobotMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  ChunkMaterial: {fileID: 2100000, guid: 258dbdc42b039914aaa647386a6b7b44, type: 2}
+  BlankPrefab: {fileID: 5571440867672880871, guid: d84fd9092f23c504597171f0729f89bc,
     type: 3}
+  EntityBase: {fileID: 1498553645}
+--- !u!1 &1498553644
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1498553645}
+  m_Layer: 0
+  m_Name: EntityBase
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1498553645
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1498553644}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1912400213
 GameObject:
   m_ObjectHideFlags: 0

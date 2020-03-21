@@ -8,11 +8,13 @@ namespace Assets.Scripts.UnityComponents
     {
         EntitySet globalSet;
         GameObject blankPrefab;
+        UnityEngine.Transform entityBase;
 
-        public GameObjectCreationSystem(World world, GameObject blankPrefab)
+        public GameObjectCreationSystem(World world, GameObject blankPrefab, UnityEngine.Transform entityBase)
         {
             globalSet = world.GetEntities().With<Global>().AsSet();
             this.blankPrefab = blankPrefab;
+            this.entityBase = entityBase;
         }
 
         public void Update()
@@ -21,7 +23,7 @@ namespace Assets.Scripts.UnityComponents
 
             foreach (int id in mapping.Creations)
             {
-                GameObject go = Object.Instantiate(blankPrefab);
+                GameObject go = Object.Instantiate(blankPrefab, entityBase);
                 go.name = id.ToString();
                 mapping.Add(id, go);
             }

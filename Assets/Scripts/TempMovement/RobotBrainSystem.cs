@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts.Chunk;
 using Assets.Scripts.Core;
+using Assets.Scripts.Scripting;
 using Assets.Scripts.TempMovement;
 using DefaultEcs;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace Assets.Scripts.Movement
         public RobotBrainSystem(World world)
         {
             translationSet = world.GetEntities().With<GridPosition>().AsSet();
-            movementResultSet = world.GetEntities().With<MovementResult>().AsSet();
+            movementResultSet = world.GetEntities().With<ActionResult>().AsSet();
         }
 
         public void Update(float fractional)
@@ -23,14 +24,20 @@ namespace Assets.Scripts.Movement
 
             foreach (var entity in translationSet.GetEntities())
             {
-                ZigZag(entity);
+                //ZigZag(entity);
+                Turn(entity);
             }
 
             // TODO: This will need to be moved to the script manager
             foreach (var entity in movementResultSet.GetEntities())
             {
-                entity.Remove<MovementResult>();
+                entity.Remove<ActionResult>();
             }
+        }
+
+        void Turn(Entity entity)
+        {
+            entity.Set(ScriptCommand.Left);
         }
 
         void ZigZag(Entity entity)
@@ -45,9 +52,9 @@ namespace Assets.Scripts.Movement
             var calculatedDirection = Vector3Int.zero;
             var r = Random.Range(0f, 1f);
 
-            if (entity.Has<MovementResult>() && entity.Get<MovementResult>().Result == false && r < 0.5f)
+            if (entity.Has<ActionResult>() && entity.Get<ActionResult>().Result == false && r < 0.5f)
             {
-                //calculatedDirection.y = 1;
+                calculatedDirection.y = 1;
             }
             else if (currentPosition.x != targetX /*&& r < 0.7f*/)
             {
