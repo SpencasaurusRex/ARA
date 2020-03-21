@@ -4,6 +4,8 @@ using Assets.Scripts.Movement;
 using Assets.Scripts.Rendering;
 using Assets.Scripts.TempMovement;
 using Assets.Scripts.Transform;
+using Assets.Scripts.UnityComponents;
+using Boo.Lang;
 using DefaultEcs;
 using UnityEngine;
 
@@ -18,14 +20,21 @@ namespace Assets.Scripts.Core
         MovementSlideSystem movementSlideSystem;
         SetBlockSystem setBlockSystem;
         ChunkMeshGenerationSystem chunkMeshGenerationSystem;
+        List<UnityInitializer> initializationSystems;
+        GameObjectCreationSystem gameObjectCreationSystem;
 
         public Material robotMaterial;
         public Mesh robotMesh;
         public Material chunkMaterial;
+        public GameObject blankPrefab;
+        public Entity global;
 
         void Start()
         {
             World = new World();
+
+            global = World.CreateEntity();
+            global.Set(new Global());
 
             updateManager = new UpdateManager
             (
@@ -40,6 +49,11 @@ namespace Assets.Scripts.Core
             chunkMeshGenerationSystem = new ChunkMeshGenerationSystem(World, chunkMaterial);
             transformWriteSystem = new TransformWriteSystem(World);
             renderingSystem = new RenderingSystem(World);
+            initializationSystems = new List<UnityInitializer>
+            {
+                new MeshColliderInitializationSystem(World)
+            };
+            gameObjectCreationSystem = new GameObjectCreationSystem(World, blankPrefab);
 
             Setup();
 
@@ -51,6 +65,17 @@ namespace Assets.Scripts.Core
             float fractional = updateManager.Update(Time.deltaTime);
             movementSlideSystem.Update(fractional);
             chunkMeshGenerationSystem.Update();
+
+            foreach (var initializationSystem in initializationSystems)
+            {
+                initializationSystem.PollForGameObjects();
+            }
+            gameObjectCreationSystem.Update();
+            foreach (var initializationSystem in initializationSystems)
+            {
+                initializationSystem.Update();
+            }
+
             transformWriteSystem.Update();
             renderingSystem.Update();
         }
@@ -59,20 +84,19 @@ namespace Assets.Scripts.Core
         {
             var props = new BlockProperties();
             
-            var global = World.CreateEntity();
             var chunkSet = new ChunkSet(World, props);
-            global.Set(new Global());
             global.Set(chunkSet);
             global.Set(props);
+            global.Set(new GameObjectMapping());
 
             var chunk = World.CreateEntity();
             chunkSet.GetBlock(Vector3Int.zero);
             chunkSet.GetChunkEntity(new ChunkCoords(Vector3Int.zero)).Set(new GenerateMesh());
 
-            //for (int x = 0; x < 10; x++)
-            //for (int y = 1; y < 10; y++)
-            //for (int z = 0; z < 10; z++)
-            //    Robot(new Vector3Int(x, y, z));
+            for (int x = 0; x < 10; x++)
+                for (int y = 1; y < 10; y++)
+                    for (int z = 0; z < 10; z++)
+                        Robot(new Vector3Int(x, y, z));
 
             for (int x = -Chunk.Chunk.ChunkSize * 8; x < Chunk.Chunk.ChunkSize * 8; x++)
             {

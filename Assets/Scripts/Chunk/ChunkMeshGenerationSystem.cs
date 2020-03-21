@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Assets.Scripts.Core;
+using Assets.Scripts.UnityComponents;
 using DefaultEcs;
 using UnityEngine;
 
@@ -79,9 +80,11 @@ namespace Assets.Scripts.Chunk
                 };
                 mesh.RecalculateNormals();
                 mesh.RecalculateBounds();
-
+                
+                entity.Set(new MeshColliderInitializer(mesh));
                 entity.Set(mesh);
                 entity.Set(material);
+                //entity.Set(collider);
                 entity.Remove<GenerateMesh>();
             }
         }
