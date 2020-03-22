@@ -1,13 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace ARACore
 {
-    public class Util
+    public enum Direction
     {
+        East,
+        North,
+        West,
+        South,
+        Up,
+        Down
+    }
+
+    public enum MovementAction
+    {
+        Forward,
+        Up,
+        Back,
+        Down,
+        TurnLeft,
+        TurnRight
+    }
+
+    public static class Util
+    {
+        public static Vector3 ToVector3(this Vector3Int v) => new Vector3(v.x, v.y, v.z);
+        public static Vector3Int Round(this Vector3 v) => Vector3Int.RoundToInt(v);
+        public static Vector3 Translation(this Matrix4x4 mat) => new Vector3(mat.m03, mat.m13, mat.m23);
         public static Quaternion ToQuaternion(int h)
         {
             return Quaternion.AngleAxis(-90 * h, Vector3.up);
@@ -31,7 +52,7 @@ namespace ARACore
                 case Direction.South: return Back;
                 case Direction.Up: return Vector3Int.up;
                 case Direction.Down: return Vector3Int.down;
-                default: throw new ArgumentException("What are you even doing mate?");
+                default: throw new ArgumentException("Invalid direction");
             }
         }
 
@@ -55,18 +76,5 @@ namespace ARACore
         // A: FUBD
         // H: ENWS
         // D: ENWSUD
-    }
-
-    public class Vector3IntEqualityComparer : IEqualityComparer<Vector3Int>
-    {
-        public bool Equals(Vector3Int a, Vector3Int b)
-        {
-            return a.x == b.x && a.y == b.y && a.z == b.z;
-        }
-
-        public int GetHashCode(Vector3Int obj)
-        {
-            return obj.GetHashCode();
-        }
     }
 }

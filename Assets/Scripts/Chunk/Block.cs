@@ -1,12 +1,12 @@
-﻿using ARACore;
-using UnityEngine;
-
-namespace ARACore
+﻿namespace Assets.Scripts.Chunk
 {
-    public struct Block
+    public enum Block
     {
-        public ulong id;
-        public BlockType type;
-        // public Vector3 position;
+        Air = 0,
+        Stone,
+        Grass,
+        Dirt,
+        Robot,
+        Furnace
     }
 }

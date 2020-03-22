@@ -1,89 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using DefaultEcs;
 using UnityEngine;
-namespace ARACore
+
+namespace Assets.Scripts.Chunk
 {
-    public class ChunkSet : MonoBehaviour
+    public class ChunkSet
     {
-        public ChunkMesh chunkMeshPrefab;
-
-        ulong currentBlockId;
-        public ulong CurrentBlockId
-        {
-            get
-            {
-                return currentBlockId++;
-            }
-        }
-
         Dictionary<ChunkCoords, Chunk> chunks = new Dictionary<ChunkCoords, Chunk>();
+        Dictionary<ChunkCoords, Entity> chunkEntities = new Dictionary<ChunkCoords, Entity>();
+        World world;
+        BlockProperties properties;
 
-        public void GenerateWorld()
+        public ChunkSet(World world, BlockProperties properties)
         {
-            for (int x = -13; x <= 13; x++)
+            this.world = world;
+            this.properties = properties;
+        }
+
+        public Block GetBlock(Vector3Int coord)
+        {
+            return GetChunk(coord).GetBlock(coord);
+        }
+
+        public void SetBlock(Vector3Int coord, Block b)
+        {
+            var preBlock = GetChunk(coord).GetBlock(coord);
+
+            if (preBlock == b) return;
+            GetChunk(coord).SetBlock(coord, b);
+            
+            if (!properties.Values[b].GenerateMesh) return;
+            var cc = new ChunkCoords(coord);
+            var entity = GetChunkEntity(cc);
+            if (!entity.Has<GenerateMesh>())
             {
-                for (int z = -13; z <= 13; z++)
+                entity.Set(new GenerateMesh
                 {
-                    for (int y = -1; y <= 1; y++)
-                    {
-                        GenerateChunk(new ChunkCoords(x, y, z));
-                    }
-                }
+                    Coords = cc
+                });
             }
         }
 
-        void Update()
+        public Entity GetChunkEntity(ChunkCoords coord)
         {
-            // TODO: Move mesh logic into a MeshManager
-            // TODO: Update active mesh renderers based on camera's position
+            GetChunk(coord);
+            return chunkEntities[coord];
         }
 
-        public void GenerateChunk(ChunkCoords cc)
+        public void SetTileEntity(Vector3Int coord, Block b, Entity tileEntity)
         {
-            // Make sure the chunk doesn't already exist
-            Chunk chunk;
-            if (!chunks.TryGetValue(cc, out chunk))
-            {
-                chunk = new Chunk(this, cc);
-                chunks[cc] = chunk;
-            }
-            chunk.GenerateMesh();
+            GetChunk(coord).SetBlock(coord, b, tileEntity);
         }
 
-        public void CreateBlock(int gx, int gy, int gz, BlockType type)
-        {
-            Block b;
-            // TODO only use this if the block needs other data components (ex: Update)
-            b.id = CurrentBlockId;
-            b.type = type;
-            GetChunk(gx, gy, gz).SetBlock(gx, gy, gz, b);
-        }
+        Chunk GetChunk(Vector3Int globalBlockCoords) => GetChunk(new ChunkCoords(globalBlockCoords));
 
-        public Block GetBlock(Int64 gx, Int64 gy, Int64 gz)
+        Chunk GetChunk(ChunkCoords cc)
         {
-            return GetChunk(gx, gy, gz).GetBlock(gx, gy, gz);
-        }
-
-        public ulong GetBlockId(Int64 gx, Int64 gy, Int64 gz)
-        {
-            return GetChunk(gx, gy, gz).GetBlock(gx, gy, gz).id;
-        }
-
-        public BlockType GetBlockType(Int64 gx, Int64 gy, Int64 gz)
-        {
-            return GetChunk(gx, gy, gz).GetBlock(gx, gy, gz).type;
-        }
-
-        public bool IsAir(Int64 gx, Int64 gy, Int64 gz)
-        {
-            return GetBlockType(gx, gy, gz) == BlockType.Air;
-        }
-
-        Chunk GetChunk(Int64 gx, Int64 gy, Int64 gz)
-        {
-            ChunkCoords cc = ChunkCoords.FromBlockCoords(gx, gy, gz);
             Chunk c;
             if (chunks.ContainsKey(cc))
             {
@@ -91,7 +63,11 @@ namespace ARACore
             }
             else
             {
-                c = chunks[cc] = new Chunk(this, cc);
+                var entity = world.CreateEntity();
+                c = chunks[cc] = new Chunk(cc);
+                chunkEntities[cc] = entity;
+                entity.Set(c);
+                // TODO load chunk from file or generate
             }
             return c;
         }
