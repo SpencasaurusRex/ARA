@@ -6,7 +6,7 @@ namespace ARACore
 {
     public class UpdateManager
     {
-        public const float TickLength = 0.15f;
+        public const float TickLength = 0.3f;
         
         readonly List<IUpdateSystem> updateSystems = new List<IUpdateSystem>();
         float progress;

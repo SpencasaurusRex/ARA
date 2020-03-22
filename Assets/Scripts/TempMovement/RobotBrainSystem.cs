@@ -18,14 +18,17 @@ namespace Assets.Scripts.Movement
             movementResultSet = world.GetEntities().With<ActionResult>().AsSet();
         }
 
+        int tickNumber;
         public void Update(float fractional)
         {
-            if (1.0 - fractional > float.Epsilon) return;
+            if (fractional != 1.0f) return;
 
+            tickNumber++;
             foreach (var entity in translationSet.GetEntities())
             {
                 //ZigZag(entity);
-                Turn(entity);
+                //Turn(entity);
+                Dance(entity);
             }
 
             // TODO: This will need to be moved to the script manager
@@ -33,6 +36,20 @@ namespace Assets.Scripts.Movement
             {
                 entity.Remove<ActionResult>();
             }
+        }
+
+        void Dance(Entity entity)
+        {
+            if (tickNumber % 2 == 0)
+            {
+                entity.Set(ScriptCommand.Forward);
+            }
+            else
+            {
+                entity.Set(ScriptCommand.Left);
+            }
+
+            
         }
 
         void Turn(Entity entity)

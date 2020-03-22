@@ -129,7 +129,6 @@ namespace Assets.Scripts.Core
                     }
                 }
             }
-
         }
 
         static int id;

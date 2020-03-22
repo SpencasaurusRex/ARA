@@ -22,6 +22,8 @@ namespace Assets.Scripts.Movement
         {
             foreach (var entity in doneTurningSet.GetEntities())
             {
+                var turn = entity.Get<Turn>();
+                entity.Set(turn.To);
                 entity.Remove<Turn>();
             }
 
