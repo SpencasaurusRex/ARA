@@ -1,7 +1,4 @@
-﻿using MoonSharp.Interpreter;
-using System.Collections.Generic;
-
-namespace ARACore
+﻿namespace ARACore
 {
     public class ScriptManager
     {

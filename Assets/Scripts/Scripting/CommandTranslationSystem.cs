@@ -41,14 +41,13 @@ namespace Assets.Scripts.Scripting
                 if (movementCommands.Contains(command))
                 {
                     Movement(entity, command);
-                    continue;
                 }
-
-                if (turnCommands.Contains(command))
+                else if (turnCommands.Contains(command))
                 {
                     Turn(entity, command);
-                    continue;
                 }
+
+                entity.Remove<ScriptCommand>();
             }
         }
 

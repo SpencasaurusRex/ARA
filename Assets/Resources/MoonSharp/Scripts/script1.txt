@@ -1,92 +1,44 @@
--- MovementAction order
--- Forward,
--- Up,
--- Back,
--- Down,
--- TurnLeft,
--- TurnRight
-
 function forward()
     coroutine.yield(0)
-    return __result(id)
-end
-
-function up()
-    coroutine.yield(1)
-    return __result(id)
+    return __result
 end
 
 function back()
+    coroutine.yield(1)
+    return __result
+end
+
+function up()
     coroutine.yield(2)
-    return __result(id)
+    return __result
 end
 
 function down()
     coroutine.yield(3)
-    return __result(id)
+    return __result
 end
 
-function turnLeft()
+function left()
     coroutine.yield(4)
-    return __result(id)
+    return __result
 end
 
-function turnRight()
+function right()
     coroutine.yield(5)
-    return __result(id)
+    return __result
 end
 
-function x()
-    return __x(id)
-end
-
-function y()
-    return __y(id)
-end
-
-function z()
-    return __z(id)
-end
-
-function heading()
-    return __heading(id)
+function pause()
+    coroutine.yield(6)
 end
 
 function run()
-    while true do forward() end
-end
-
-function face()
-    if id % 2 == 0 then
-        if x() < targetX() then
-            th = 0
-        elseif x() > targetX() then
-            th = 2
-        elseif z() < targetZ() then
-            th = 1
-        elseif z() > targetZ() then
-            th = 3
+    while true do
+        while forward() do
+    
         end
-    else
-        if z() < targetZ() then
-            th = 1
-        elseif z() > targetZ() then
-            th = 3
-        elseif x() < targetX() then
-            th = 0
-        elseif x() > targetX() then
-            th = 2
+        while back() do
+
         end
     end
-    while heading() ~= th do
-        turnRight()
-    end
-end
-
-function targetX()
-    return math.floor(id / 6) + id % 6 + 12
-end
-
-function targetZ()
-    return math.floor(id / 6) + 12
 end

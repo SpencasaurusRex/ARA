@@ -29,7 +29,7 @@ namespace Assets.Scripts.Movement
             this.world = world;
 
             movementRequestSet = world.GetEntities().With<MovementRequest>().AsSet();
-            doneMovingSet = world.GetEntities().With<Movement>().Without<ActionResult>().AsSet();
+            doneMovingSet = world.GetEntities().With<Movement>().AsSet();
             globalSet = world.GetEntities().With<Global>().AsSet();
         }
 
@@ -61,9 +61,9 @@ namespace Assets.Scripts.Movement
 
         public void EndTick()
         {
+            StopMoving();
             CheckMovements();
             WriteResults();
-            StopMoving();
             requestedMovements.Clear();
             movementFromLookup.Clear();
             movementDependency.Clear();

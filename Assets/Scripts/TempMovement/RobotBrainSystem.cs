@@ -10,12 +10,10 @@ namespace Assets.Scripts.Movement
     public class RobotBrainSystem : IUpdateSystem
     {
         EntitySet translationSet;
-        EntitySet movementResultSet;
 
         public RobotBrainSystem(World world)
         {
             translationSet = world.GetEntities().With<GridPosition>().AsSet();
-            movementResultSet = world.GetEntities().With<ActionResult>().AsSet();
         }
 
         int tickNumber;
@@ -30,12 +28,6 @@ namespace Assets.Scripts.Movement
                 //Turn(entity);
                 Dance(entity);
             }
-
-            // TODO: This will need to be moved to the script manager
-            foreach (var entity in movementResultSet.GetEntities())
-            {
-                entity.Remove<ActionResult>();
-            }
         }
 
         void Dance(Entity entity)
@@ -48,7 +40,6 @@ namespace Assets.Scripts.Movement
             {
                 entity.Set(ScriptCommand.Left);
             }
-
             
         }
 

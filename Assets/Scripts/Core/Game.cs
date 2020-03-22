@@ -14,7 +14,7 @@ namespace Assets.Scripts.Core
 {
     public class Game : MonoBehaviour
     {
-        public static World World;
+        World world;
         UpdateManager updateManager;
         RenderingSystem renderingSystem;
         TransformWriteSystem transformWriteSystem;
@@ -36,33 +36,32 @@ namespace Assets.Scripts.Core
 
         void Start()
         {
-            World = new World();
+            world = new World();
 
-            global = World.CreateEntity();
+            global = world.CreateEntity();
             global.Set(new Global());
 
             updateManager = new UpdateManager
             (
                 new TileEntityUpdateSystem(),
-                new RobotBrainSystem(World),
-                new ScriptUpdateSystem(),
-                new CommandTranslationSystem(World),
-                new MovementUpdateSystem(World),
-                new TurnRequestSystem(World),
-                setBlockSystem = new SetBlockSystem(World)
+                new ScriptExecuteSystem(world),
+                new CommandTranslationSystem(world),
+                new MovementUpdateSystem(world),
+                new TurnRequestSystem(world),
+                setBlockSystem = new SetBlockSystem(world)
             );
 
-            movementSlideSystem = new MovementSlideSystem(World);
-            chunkMeshGenerationSystem = new ChunkMeshGenerationSystem(World, ChunkMaterial);
-            transformWriteSystem = new TransformWriteSystem(World);
-            renderingSystem = new RenderingSystem(World);
+            movementSlideSystem = new MovementSlideSystem(world);
+            chunkMeshGenerationSystem = new ChunkMeshGenerationSystem(world, ChunkMaterial);
+            transformWriteSystem = new TransformWriteSystem(world);
+            renderingSystem = new RenderingSystem(world);
             initializationSystems = new List<UnityInitializer>
             {
-                new MeshColliderInitializationSystem(World)
+                new MeshColliderInitializationSystem(world)
             };
-            gameObjectCreationSystem = new GameObjectCreationSystem(World, BlankPrefab, EntityBase);
-            turnSystem = new TurnSystem(World);
-            robotInitSystem = new RobotInitSystem(World, RobotMesh, RobotMaterial);
+            gameObjectCreationSystem = new GameObjectCreationSystem(world, BlankPrefab, EntityBase);
+            turnSystem = new TurnSystem(world);
+            robotInitSystem = new RobotInitSystem(world, RobotMesh, RobotMaterial);
 
             Setup();
 
@@ -96,19 +95,28 @@ namespace Assets.Scripts.Core
         {
             var props = new BlockProperties();
             
-            var chunkSet = new ChunkSet(World, props);
+            var chunkSet = new ChunkSet(world, props);
             global.Set(chunkSet);
             global.Set(props);
             global.Set(new GameObjectMapping());
 
-            var chunk = World.CreateEntity();
+            var chunk = world.CreateEntity();
             chunkSet.GetBlock(Vector3Int.zero);
             chunkSet.GetChunkEntity(new ChunkCoords(Vector3Int.zero)).Set(new GenerateMesh());
 
-            for (int x = 0; x < 10; x++)
-                for (int y = 1; y < 10; y++)
-                    for (int z = 0; z < 10; z++)
-                        Robot(new Vector3Int(x, y, z));
+            //for (int x = 0; x < 10; x++)
+            //    for (int y = 1; y < 10; y++)
+            //        for (int z = 0; z < 10; z++)
+            //            Robot(new Vector3Int(x, y, z));
+
+            var robot1 = Robot(Vector3Int.zero);
+            robot1.Set(new ScriptInfo { Path = "script1", Status= ScriptStatus.Running});
+
+            chunkSet.SetBlock(new Vector3Int(0, 0, 20), Block.Dirt);
+            chunkSet.SetBlock(new Vector3Int(0, 0, -20), Block.Dirt);
+
+            var robot2 = Robot(Vector3Int.one);
+            robot2.Set(ScriptCommand.Forward);
 
             int radius = 4;
 
@@ -132,10 +140,11 @@ namespace Assets.Scripts.Core
         }
 
         static int id;
-        void Robot(Vector3Int initialPosition)
+        Entity Robot(Vector3Int initialPosition)
         {
-            Entity entity = World.CreateEntity();
+            Entity entity = world.CreateEntity();
             entity.Set(new RobotInit(initialPosition));
+            return entity;
         }
     }
 }
