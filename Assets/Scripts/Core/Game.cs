@@ -20,6 +20,7 @@ namespace Assets.Scripts.Core
         TransformWriteSystem transformWriteSystem;
         MovementSlideSystem movementSlideSystem;
         SetBlockSystem setBlockSystem;
+        CameraLoadRadiusSystem cameraLoadRadiusSystem;
         ChunkMeshGenerationSystem chunkMeshGenerationSystem;
         List<UnityInitializer> initializationSystems;
         GameObjectCreationSystem gameObjectCreationSystem;
@@ -31,6 +32,7 @@ namespace Assets.Scripts.Core
         public Material ChunkMaterial;
         public GameObject BlankPrefab;
         public UnityEngine.Transform EntityBase;
+        public UnityEngine.Transform Camera;
 
         Entity global;
 
@@ -44,14 +46,18 @@ namespace Assets.Scripts.Core
             updateManager = new UpdateManager
             (
                 new TileEntityUpdateSystem(),
+                //new RobotBrainSystem(world),
                 new ScriptExecuteSystem(world),
                 new CommandTranslationSystem(world),
+                new MovementOutOfBoundsSystem(world),
+                new ChunkLoadSystem(world),
                 new MovementUpdateSystem(world),
                 new TurnRequestSystem(world),
                 setBlockSystem = new SetBlockSystem(world)
             );
 
             movementSlideSystem = new MovementSlideSystem(world);
+            cameraLoadRadiusSystem = new CameraLoadRadiusSystem(world, Camera);
             chunkMeshGenerationSystem = new ChunkMeshGenerationSystem(world, ChunkMaterial);
             transformWriteSystem = new TransformWriteSystem(world);
             renderingSystem = new RenderingSystem(world);
@@ -73,6 +79,7 @@ namespace Assets.Scripts.Core
             float fractional = updateManager.Update(Time.deltaTime);
             movementSlideSystem.Update(fractional);
             turnSystem.Update(fractional);
+            cameraLoadRadiusSystem.Update();
             chunkMeshGenerationSystem.Update();
 
             foreach (var initializationSystem in initializationSystems)
@@ -100,43 +107,29 @@ namespace Assets.Scripts.Core
             global.Set(props);
             global.Set(new GameObjectMapping());
 
-            var chunk = world.CreateEntity();
-            chunkSet.GetBlock(Vector3Int.zero);
-            chunkSet.GetChunkEntity(new ChunkCoords(Vector3Int.zero)).Set(new GenerateMesh());
+            //for (int x = 0; x < 10; x++)
+            //for (int y = 1; y < 10; y++)
+            //for (int z = 0; z < 10; z++)
+            //{
+            //    var robot = Robot(new Vector3Int(x, y, z));
+            //    robot.Set(new ScriptInfo { Path="script1", Status = ScriptStatus.Running});
+            //}
 
             //for (int x = 0; x < 10; x++)
-            //    for (int y = 1; y < 10; y++)
-            //        for (int z = 0; z < 10; z++)
-            //            Robot(new Vector3Int(x, y, z));
+            //for (int y = 1; y < 10; y++)
+            //{
+            //    chunkSet.SetBlock(new Vector3Int(x, y, 20), Block.Dirt);
+            //    chunkSet.SetBlock(new Vector3Int(x, y, -20), Block.Dirt);
+            //}
 
-            var robot1 = Robot(Vector3Int.zero);
-            robot1.Set(new ScriptInfo { Path = "script1", Status= ScriptStatus.Running});
+            var robot1 = Robot(new Vector3Int(0, -1, 0));
+            robot1.Set(new ScriptInfo { Path = "script1", Status = ScriptStatus.Running });
 
-            chunkSet.SetBlock(new Vector3Int(0, 0, 20), Block.Dirt);
-            chunkSet.SetBlock(new Vector3Int(0, 0, -20), Block.Dirt);
+            //chunkSet.SetBlock(new Vector3Int(0, 0, 20), Block.Dirt);
+            //chunkSet.SetBlock(new Vector3Int(0, 0, -20), Block.Dirt);
 
-            var robot2 = Robot(Vector3Int.one);
-            robot2.Set(ScriptCommand.Forward);
-
-            int radius = 4;
-
-            for (int x = -Chunk.Chunk.ChunkSize * radius; x < Chunk.Chunk.ChunkSize * radius; x++)
-            {
-                for (int z = -Chunk.Chunk.ChunkSize * radius; z < Chunk.Chunk.ChunkSize * radius; z++)
-                {
-                    for (int y = -Chunk.Chunk.ChunkSize; y < 0; y++)
-                    {
-                        if (y == -1)
-                        {
-                            chunkSet.SetBlock(new Vector3Int(x, y, z), Block.Grass);
-                        }
-                        else
-                        {
-                            chunkSet.SetBlock(new Vector3Int(x, y, z), Block.Dirt);
-                        }
-                    }
-                }
-            }
+            //var robot2 = Robot(Vector3Int.one);
+            //robot2.Set(ScriptCommand.Forward);
         }
 
         static int id;

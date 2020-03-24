@@ -36,6 +36,7 @@ namespace Assets.Scripts.Chunk
             {
                 triangleOffset = 0;
                 var coord = entity.Get<GenerateMesh>().Coords;
+                Debug.Log($"ChunkMeshGenerationSystem: {coord}");
 
                 List<Vector3> vertices = new List<Vector3>();
                 List<int> triangles = new List<int>();

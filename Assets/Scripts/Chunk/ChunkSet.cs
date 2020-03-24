@@ -6,7 +6,9 @@ namespace Assets.Scripts.Chunk
 {
     public class ChunkSet
     {
-        Dictionary<ChunkCoords, Chunk> chunks = new Dictionary<ChunkCoords, Chunk>();
+        public List<ChunkCoords> ChunksToLoad = new List<ChunkCoords>();
+        
+        Dictionary<ChunkCoords, Chunk> loadedChunks = new Dictionary<ChunkCoords, Chunk>();
         Dictionary<ChunkCoords, Entity> chunkEntities = new Dictionary<ChunkCoords, Entity>();
         World world;
         BlockProperties properties;
@@ -15,6 +17,16 @@ namespace Assets.Scripts.Chunk
         {
             this.world = world;
             this.properties = properties;
+        }
+
+        public void UnloadChunkLogically(ChunkCoords coords)
+        {
+            // Assume this chunk is already unloaded visually
+            var chunkEntity = chunkEntities[coords];
+            chunkEntity.Dispose();
+
+            loadedChunks.Remove(coords);
+            chunkEntities.Remove(coords);
         }
 
         public Block GetBlock(Vector3Int coord)
@@ -54,22 +66,57 @@ namespace Assets.Scripts.Chunk
 
         Chunk GetChunk(Vector3Int globalBlockCoords) => GetChunk(new ChunkCoords(globalBlockCoords));
 
-        Chunk GetChunk(ChunkCoords cc)
+        Chunk GetChunk(ChunkCoords coords)
         {
-            Chunk c;
-            if (chunks.ContainsKey(cc))
+            Chunk chunk;
+            if (loadedChunks.ContainsKey(coords))
             {
-                c = chunks[cc];
+                chunk = loadedChunks[coords];
             }
             else
             {
                 var entity = world.CreateEntity();
-                c = chunks[cc] = new Chunk(cc);
-                chunkEntities[cc] = entity;
-                entity.Set(c);
-                // TODO load chunk from file or generate
+                chunk = loadedChunks[coords] = new Chunk(coords);
+                chunkEntities[coords] = entity;
+                entity.Set(chunk);
+
+                if (false /* TODO: on disk? */)
+                {
+                    // Load from disk
+                }
+                else
+                {
+                    Debug.Log($"Generate chunk {coords}");
+                    GenerateChunk(chunk, coords);
+                }
             }
-            return c;
+            return chunk;
+        }
+
+        public bool IsChunkLoaded(ChunkCoords coords) => loadedChunks.ContainsKey(coords);
+
+        void GenerateChunk(Chunk chunk, ChunkCoords coords)
+        {
+            if (coords.Y == -1)
+            {
+                for (int x = 0; x < Chunk.ChunkSize; x++)
+                {
+                    for (int y = 0; y < Chunk.ChunkSize; y++)
+                    {
+                        for (int z = 0; z < Chunk.ChunkSize; z++)
+                        {
+                            if (y == Chunk.ChunkSize - 2)
+                            {
+                                chunk.SetBlockLocal(x, y, z, Block.Grass);
+                            }
+                            else if (y < Chunk.ChunkSize - 2)
+                            {
+                                chunk.SetBlockLocal(x, y, z, Block.Dirt);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

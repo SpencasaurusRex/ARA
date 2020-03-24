@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Assets.Scripts.Core;
+using DefaultEcs;
 using UnityEngine;
 
 namespace ARACore
@@ -73,8 +75,6 @@ namespace ARACore
             return (Direction)((int)(heading + action) % 4);
         }
 
-        // A: FUBD
-        // H: ENWS
-        // D: ENWSUD
+        public static Entity GetGlobalEntity(this World world) => world.GetEntities().With<Global>().AsSet().GetEntities()[0];
     }
 }

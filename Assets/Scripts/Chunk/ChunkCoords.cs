@@ -21,6 +21,11 @@ namespace Assets.Scripts.Chunk
             );
         }
 
+        public ChunkCoords(int x, int y, int z)
+        {
+            coords = new Vector3Int(x, y, z);
+        }
+
         public Vector3Int ToBlockCoords() => coords * Chunk.ChunkSize;
 
         public override int GetHashCode() => coords.GetHashCode();
@@ -28,5 +33,10 @@ namespace Assets.Scripts.Chunk
         public override bool Equals(object obj) => obj is ChunkCoords other && Equals(other);
 
         public bool Equals(ChunkCoords other) => coords == other.coords;
+
+        public override string ToString()
+        {
+            return $"ChunkCoords{coords}";
+        }
     }
 }

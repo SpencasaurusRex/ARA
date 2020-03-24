@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ARACore;
 using Assets.Scripts.Chunk;
 using Assets.Scripts.Core;
 using Assets.Scripts.TempMovement;
@@ -19,7 +20,7 @@ namespace Assets.Scripts.Robots
         public RobotInitSystem(World world, Mesh robotMesh, Material robotMaterial)
         {
             robotInitSet = world.GetEntities().With<RobotInit>().AsSet();
-            globalEntity = world.GetEntities().With<Global>().AsSet().GetEntities()[0];
+            globalEntity = world.GetGlobalEntity();
 
             var mapping = new Dictionary<ID, Entity>();
             globalEntity.Set(mapping);

@@ -24,9 +24,9 @@ namespace Assets.Scripts.Movement
             tickNumber++;
             foreach (var entity in translationSet.GetEntities())
             {
-                //ZigZag(entity);
+                ZigZag(entity);
                 //Turn(entity);
-                Dance(entity);
+                //Dance(entity);
             }
         }
 
