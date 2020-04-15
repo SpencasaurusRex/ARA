@@ -29,7 +29,6 @@ namespace Assets.Scripts.Movement
                 var coords = new ChunkCoords(request.To);
                 if (!chunkSet.IsChunkLoaded(coords))
                 {
-                    Debug.Log($"Chunks to Load {coords.ToString()}");
                     chunkSet.ChunksToLoad.Add(coords);
                 }
             }

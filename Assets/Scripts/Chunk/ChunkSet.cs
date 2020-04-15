@@ -41,7 +41,7 @@ namespace Assets.Scripts.Chunk
             if (preBlock == b) return;
             GetChunk(coord).SetBlock(coord, b);
             
-            if (!properties.Values[b].GenerateMesh) return;
+            if (!properties.Values[(int)b].GenerateMesh) return;
             var cc = new ChunkCoords(coord);
             var entity = GetChunkEntity(cc);
             if (!entity.Has<GenerateMesh>())
@@ -66,7 +66,7 @@ namespace Assets.Scripts.Chunk
 
         Chunk GetChunk(Vector3Int globalBlockCoords) => GetChunk(new ChunkCoords(globalBlockCoords));
 
-        Chunk GetChunk(ChunkCoords coords)
+        public Chunk GetChunk(ChunkCoords coords)
         {
             Chunk chunk;
             if (loadedChunks.ContainsKey(coords))
@@ -86,7 +86,6 @@ namespace Assets.Scripts.Chunk
                 }
                 else
                 {
-                    Debug.Log($"Generate chunk {coords}");
                     GenerateChunk(chunk, coords);
                 }
             }

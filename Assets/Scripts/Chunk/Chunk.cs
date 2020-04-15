@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using DefaultEcs;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ namespace Assets.Scripts.Chunk
 {
     public class Chunk
     {
-        public const int ChunkBits = 4;
+        public const int ChunkBits = 5;
         public const int ChunkSize = 1 << ChunkBits;
         public const int ChunkMask = ChunkSize - 1;
         const int NumBlocks = ChunkSize * ChunkSize * ChunkSize;
@@ -51,14 +52,22 @@ namespace Assets.Scripts.Chunk
             TileEntities[index] = entity;
         }
 
-        static int GetIndexFromLocal(Vector3Int local)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Block GetBlockLocal(int x, int y, int z)
+        {
+            return Blocks[GetIndexFromLocal(x, y, z)];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetIndexFromLocal(Vector3Int local)
         {
             return (local.z << (ChunkBits * 2)) + 
                    (local.y << (ChunkBits)) + 
                    (local.x);
         }
 
-        static int GetIndexFromLocal(int x, int y, int z)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetIndexFromLocal(int x, int y, int z)
         {
             return (z << (ChunkBits * 2)) + 
                    (y << (ChunkBits)) + 

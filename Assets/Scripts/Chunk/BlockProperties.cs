@@ -4,23 +4,34 @@ namespace Assets.Scripts.Chunk
 {
     public class BlockProperties
     {
-        public Dictionary<Block, Properties> Values = new Dictionary<Block, Properties>();
+        public Properties[] Values;
         int currentTile;
 
         public BlockProperties()
         {
-            Values.Add(Block.Air, new Properties
+            //Air,
+            //Stone,
+            //Grass,
+            //Dirt,
+            //Robot,
+            //Furnace
+            
+            var values = new List<Properties>();
+            // Air
+            values.Add(new Properties
             {
                 GenerateMesh = false,
                 Transparent = true
             });
-            Values.Add(Block.Stone, new Properties
+            // Stone
+            values.Add(new Properties
             {
                 GenerateMesh = true,
                 Transparent = false,
                 All = true
             });
-            Values.Add(Block.Grass, new Properties
+            // Grass
+            values.Add(new Properties
             {
                 GenerateMesh = true,
                 Transparent = false,
@@ -28,16 +39,27 @@ namespace Assets.Scripts.Chunk
                 Top = true,
                 Bottom = true
             });
-            Values.Add(Block.Dirt, new Properties
+            // Dirt
+            values.Add(new Properties
             {
                 GenerateMesh = true,
                 All = true
             });
-            Values.Add(Block.Robot, new Properties
+            // Robot
+            values.Add(new Properties
             {
                 GenerateMesh = false,
                 Transparent = true
             });
+            // Furnace
+            values.Add(new Properties
+            {
+                GenerateMesh = true,
+                Transparent = false
+            });
+
+            Values = values.ToArray();
+
             CalculateTiles();
         }
 
@@ -60,9 +82,8 @@ namespace Assets.Scripts.Chunk
         public void CalculateTiles()
         {
             currentTile = 0;
-            foreach (var block in Values.Keys)
+            foreach (var props in Values)
             {
-                Properties props = Values[block];
                 if (!props.GenerateMesh) continue;
                 props.TileIndex = new int[6];
 

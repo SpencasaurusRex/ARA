@@ -25,6 +25,8 @@ namespace Assets.Scripts.UnityComponents
                 MeshCollider meshCollider = go.AddComponent<MeshCollider>();
                 meshCollider.sharedMesh = initializer.Mesh;
 
+                go.transform.position = initializer.Position;
+
                 entity.Remove<MeshColliderInitializer>();
             }
         }
